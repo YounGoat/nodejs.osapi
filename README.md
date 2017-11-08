@@ -15,7 +15,7 @@ This API is compatible with CEPH object storage. There are two styles available:
 const swift = require('osapi/swift');
 
 let conn = new swift.Connection({
-    endPoint   : 'http://storage.example.com/',
+	endPoint   : 'http://storage.example.com/',
 	subuser    : 'userName:subUserName',
 	key        : '380289ba59473a368c593c1f1de6efb0380289ba5', // generally 40 characters 
 	tempURLKey : '380289ba59473a368c593c1f1de6efb0', // generally 32 characters
@@ -40,7 +40,7 @@ conn.readObject('hello/world', (err, data) => {
 const s3 = require('osapi/s3');
 
 let conn = new s3.Connection({
-    endPoint        : 'http://storage.example.com/',
+	endPoint        : 'http://storage.example.com/',
 	accessKey       : '380289ba59473a368c59', // 20 characters 
 	secretAccessKey : '380289ba59473a368c593c1f1de6efb0380289ba5', // 40 characters
 	bucket          : 'bucketName',
