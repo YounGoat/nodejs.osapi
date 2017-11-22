@@ -1,4 +1,4 @@
-#   osapi
+#	osapi
 __通用對象存儲應用程式界面__
 
 [![total downloads of osapi](https://img.shields.io/npm/dt/osapi.svg)](https://www.npmjs.com/package/osapi)
@@ -12,9 +12,9 @@ __通用對象存儲應用程式界面__
 
 我們提供兩種不同風格的 API：OpenStack *SWIFT* 風格和 Amazon *S3* 風格。
 
-##  快速開始
+##	快速開始
 
-### OpenStack Swift 風格
+###	OpenStack Swift 風格
 
 ```javascript
 const swift = require('osapi/swift');
@@ -40,7 +40,7 @@ conn.readObject('hello/world', (err, data) => {
 });
 ```
 
-### AWS S3 風格
+###	AWS S3 風格
 
 ```javascript
 
@@ -70,7 +70,7 @@ conn.readObject('hello/world', (err, data) => {
 });
 ```
 
-##  API
+##	API
 
 每套 __osapi/*__ 風格的 API 都會提供一個名為 `Connection` 的類，你可以從創建該類的實例開始，參見[快速開始](#快速開始)一節。
 
@@ -81,7 +81,7 @@ conn.readObject('hello/world', (err, data) => {
 *   否則，`callback` 參數始終__應當__放在參數表的最末位置。
 *   並且，回調函數自身的參數表形如 `callback(error, data)`。
 
-### osapi/swift
+###	osapi/swift
 
 在我們找到一套更理想的 API 之前，__osapi/swift__ 將作為 __osapi__ 的默認入口。也就是說，以下兩種引用方法等效：
 
@@ -91,23 +91,23 @@ const swift = require('osapi/swift');
 const swift = require('osapi');
 ```
 
-*   new __swift.Connection__(*object* options)
-*   __\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
-*   __\<conn\>.readObject__(*object | string* options [, *function* callback ])
-*   __\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
-*   __\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
+*	new __swift.Connection__(*object* options)
+*	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
+*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
+*	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
+*	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
 
-### osapi/s3
+###	osapi/s3
 
 ```javascript
 const swift = require('osapi/s3');
 ```
 
-*   new __s3.Connection__(*object* options)
-*   __\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
-*   __\<conn\>.readObject__(*object | string* options [, *function* callback ])
-*   __\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
-*   __\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
+*	new __s3.Connection__(*object* options)
+*	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
+*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
+*	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
+*	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
 
 ##  術語
 
