@@ -1,6 +1,6 @@
 {
-    "name": "osapi",
-    "version": "0.0.3",
+    "name": "ceph",
+    "version": "0.0.4",
     "description": "A common Object Storage API",
     "main": "swift/index.js",
     "scripts": {

@@ -92,6 +92,7 @@ const Connection = function(options) {
 	this.agent = null;
 
 	// subuser
+	// username & subUsername
 	var subuser = null;
 	if (options.subuser) {
 		subuser = options.subuser;
@@ -102,6 +103,7 @@ const Connection = function(options) {
 	if (!subuser) {
 		throw new OptionsAbsentError('subuser', ['username,', 'subusername']);
 	}
+	[ this.username, this.subUsername ] = subuser.split(':');
 
 	// key
 	var key = options.key;
@@ -195,6 +197,43 @@ Connection.prototype._action = function(action, callback) {
 	};
 	return callback ? RR() : new Promise(RR);
 };
+
+/**
+ * Create new container(bucket) on remote storage.
+ * @param  {Object}           options
+ * @param  {string}           options            regard as the name(key) of object to be stored
+ * @param  {string}           options.name       name(key) of object to be stored
+ * @param  {Function}        [callback]          function(err, data)
+ */
+Connection.prototype.createContainer = function(options, callback) {
+	// ---------------------------
+	// Uniform arguments.
+
+	if (typeof options == 'string') {
+		options = { name: options };
+	}
+	else {
+		options = Object.assign({}, options);
+	}
+
+	return this._action((done) => {
+		let urlname = options.name;
+		this.agent.put(urlname, '', (err, response) => {
+			let data = null;
+			if (!err) {
+				if (['201', '202'].includes(response.statusCode)) {
+					data = {
+						transId: response.headers['x-trans-id']
+					};
+				}
+				else {
+					err = new Error(`failed to create container: ${response.statusCode}`);
+				}
+			}
+			done(err, data);
+		});
+	}, callback);
+}
 
 /**
  * Put an object to remote storage.
@@ -308,7 +347,9 @@ Connection.prototype.findContainers = function(options, callback) {
  * @param  {char}            [options.delimiter]   path delimiter, READMORE for details
  * @param  {string}          [options.prefix]      prefix of name(key) of objects
  * @param  {string}          [options.path]        leading path
- * @param  {number}          [options.limit]       
+ * @param  {number}          [options.limit]       maximum number of returned objects.
+ *                                                 By default, up to 10,000 will be returned. 
+ *                                                 The maximum value is configurable for server admin.
  * @param  {Function}        [callback]
  * 
  * -- READMORE：path and delimiter --

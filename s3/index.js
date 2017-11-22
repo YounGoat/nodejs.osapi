@@ -160,33 +160,34 @@ Connection.prototype._action = function(action, callback) {
 	return callback ? RR() : new Promise(RR);
 };
 
-// Connection.prototype.createBucket = function(options, callback) {
-//     // ---------------------------
-// 	// Uniform arguments.
+Connection.prototype.createBucket = function(options, callback) {
+    // ---------------------------
+	// Uniform arguments.
 	
-// 	if (typeof options == 'string') {
-// 		options = { name: options };
-// 	}
-// 	else {
-// 		options = Object.assign({}, options);
-//     }
+	if (typeof options == 'string') {
+		options = { name: options };
+	}
+	else {
+		options = Object.assign({}, options);
+    }
     
-//     return this._action((done) => {
-//         let urlname = `/${options.name}`;
-//         this.agent.put(urlname, (err, response) => {
-//             if (!err && response.statusCode != 204) {
-// 				err = new Error(`failed to create bucket "${options.name}"`);
-// 			}
-// 			done(err);
-//         });
-//     }, callback);
-// };
+    return this._action((done) => {
+        let urlname = `/${options.name}`;
+        this.agent.put(urlname, (err, response) => {
+            if (!err && response.statusCode != 204) {
+				err = new Error(`failed to create bucket "${options.name}"`);
+			}
+			done(err);
+        });
+    }, callback);
+};
 
 /**
  * Put an object to remote storage.
  * @param  {Object}           options
  * @param  {string}           options            regard as the name(key) of object to be stored
  * @param  {string}           options.name       name(key) of object to be stored
+ * @param  {object}           options.meta       meta info of the object
  * @param  {string}          [options.bucket]    container/bucket to place the object, 
  *                                               by default current container of the connection will be used
  * @param  {string}           content            object content text
@@ -264,25 +265,25 @@ Connection.prototype.deleteObject = function(options, callback) {
 	}, callback);
 };
 
-// Connection.prototype.findBuckets = function(options, callback) {
-//     // ---------------------------
-//     // Uniform arguments.
+Connection.prototype.findBuckets = function(options, callback) {
+    // ---------------------------
+    // Uniform arguments.
     
-//     if (typeof arguments[0] == 'function') {
-// 		options = {};
-// 		callback = arguments[0];
-//     }
+    if (typeof arguments[0] == 'function') {
+		options = {};
+		callback = arguments[0];
+    }
     
-//     return this._action((done) => {
-// 		let urlname = '/';
-// 		this.agent.get(urlname, { 'accept': 'application/json' }, (err, response) => {
-// 			if (err) return done(err);
+    return this._action((done) => {
+		let urlname = '/';
+		this.agent.get(urlname, { 'accept': 'application/json' }, (err, response) => {
+			if (err) return done(err);
 			
-// 			// ...
-// 			done(null, response.body);
-// 		});
-// 	}, callback);
-// };
+			// ...
+			done(null, response.body);
+		});
+	}, callback);
+};
 
 // AWS authentication uses signature generated with AWS secret access key, without 
 // applying for an auth token before consequential requests like what SWIFT APIs require.

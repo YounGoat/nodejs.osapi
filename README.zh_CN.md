@@ -1,20 +1,20 @@
 #	osapi
-__A common Object Storage API__
+__通用对象存储应用程序接口__
 
 [![total downloads of osapi](https://img.shields.io/npm/dt/osapi.svg)](https://www.npmjs.com/package/osapi)
 [![osapi's License](https://img.shields.io/npm/l/osapi.svg)](https://www.npmjs.com/package/osapi)
 [![latest version of osapi](https://img.shields.io/npm/v/osapi.svg)](https://www.npmjs.com/package/osapi)
 
-[简体中文](./README.zh_CN.md)
+[英文](./README.md)
 [繁体中文](./README.zh_TW.md)
 
-This API is compatible with CEPH object storage, so the package is also named __[ceph](https://www.npmjs.com/package/ceph)__. You may install and require one of `osapi` and `ceph` at your will.
+这套 API 很好地兼容了 CEPH 对象存储服务，因此取 __[ceph](https://www.npmjs.com/package/ceph)__ 作为本包的别名。你可以按照个人喜好，引用 `osapi` 或 `ceph` 包，两个 NPM 包将保持同步更新。
 
-There are two styles available: OpenStack *SWIFT* and Amazon *S3*.
+我们提供两种不同风格的 API：OpenStack *SWIFT* 风格和 Amazon *S3* 风格。
 
-##	Get Started
+##	快速开始
 
-###	OpenStack Swift Style
+###	OpenStack Swift 风格
 
 ```javascript
 const swift = require('osapi/swift');
@@ -40,7 +40,7 @@ conn.readObject('hello/world', (err, data) => {
 });
 ```
 
-###	AWS S3 Style
+###	AWS S3 风格
 
 ```javascript
 
@@ -72,18 +72,18 @@ conn.readObject('hello/world', (err, data) => {
 
 ##	API
 
-With each __osapi/*__ style, you should start with creating an instance of class `Connection`, see [Get Started](#get-started) for examples.
+每套 __osapi/*__ 风格的 API 都会提供一个名为 `Connection` 的类，你可以从创建该类的实例开始，参见[快速开始](#快速开始)一节。
 
-Generally, methods of class `Connection` are ASYNCHRONOUS:
+通常，`Connection` 类的成员方法都是异步的：
 
-*	Parameter `callback` is optional. 
-*	If `callback` is ingored, function will return an instance of `Promise`.
-*	Otherwise, `callback` SHOULD be passed at the end of the arguments.
-*	And, in style `callback(error, data)`.
+*	参数 `callback` 是可选的。
+*	如果未提供 `callback` 参数，那么成员方法返回一个 `Promise` 实例。
+*	否则，`callback` 参数始终__应当__放在参数表的最末位置。
+*	并且，回调函数自身的参数表形如 `callback(error, data)`。
 
 ###	osapi/swift
 
-Before we find a way to offer a better set of APIs for object storage, __osapi/swift__ will be the default entry of __osapi__. 
+在我们找到一套更理想的 API 之前，__osapi/swift__ 将作为 __osapi__ 的默认入口。也就是说，以下两种引用方法等效：
 
 ```javascript
 const swift = require('osapi/swift');
@@ -109,20 +109,20 @@ const swift = require('osapi/s3');
 *	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
 
-##  Terms
+##  术语
 
-Amazon Simple Storage Service (S3) and OpenStack Swift are similiar but still two different things.
+亚马逊的简单存储服务（S3）和 OpenStack Swift 有相似之外，但仍然是两种不同的东西。
 
-| S3                   | SWIFT          | meaning        |
+| S3                   | SWIFT          | 含义 |
 | :----------------    | :------------- | :------------- |
-| bucket               | container      | An container belongs to one account and is used to store objects. |
-| access_key           |                | Unique token used to identify an account. |
-| secret\_secret\_key  |                | Secret token accompanying the *access_key* and used to verify the requests. |
-|                      | key            | Secret token used to generate access token for current subuser. |
-|                      | temp\_url\_key | Secret token used to generate temporary downloading URLs for objects. |
-|                      | user           | Account. |
-|                      | subuser        | User under specified account. |
+| bucket               | container      | 属于某个账户的、用于存储对象的容器。 |
+| access_key           |                | 用于识别账户的唯一标识串。 |
+| secret\_secret\_key  |                | 用于确认请求合法性的令牌，相当于密码。 |
+|                      | key            | 属于某个子用户，用于生成访问令牌的密钥。 |
+|                      | temp\_url\_key | 属于某个子用户，用于生成临时下载 URL 的密钥。 |
+|                      | user           | 对应某个账户。 |
+|                      | subuser        | 在指定账户下开设的子用户，用于区分不同的访问权限。 |
 
-##  References
+##  参考
 
 *	[S3 vs Swift](https://oldhenhut.com/2016/05/31/s3-vs-swift/)

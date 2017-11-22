@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##  [0.0.4] - Nov 23, 2017
+
+开始提供[简单中文](./README.zh_CN.md)和[繁体中文](./README.zh_TW.md)说明文档。
+
 ##  [0.0.3] - 2017-11-10
 
 Explictly require the version of Node.js in [package.json](./package.json).
