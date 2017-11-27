@@ -27,7 +27,7 @@ const MODULE_REQUIRE = 1
     , setIfHasNot = noda.inRequire('lib/setIfHasNot')
     
     // Customized errors.
-	, OptionsAbsentError = noda.inRequire('class/OptionAbsentError')
+    , OptionsAbsentError = noda.inRequire('class/OptionAbsentError')
     ;
 
 const Connection = function(options) {
@@ -144,7 +144,7 @@ util.inherits(Connection, events.EventEmitter);
 Connection.prototype._action = function(action, callback) {
 	let RR = (resolve, reject) => {
 		let done = (err, data) => {
-			err ? reject && reject(err) : resolve && resolve(data);
+            err ? reject && reject(err) : resolve && resolve(data);
 			callback && callback(err, data);
 		};
 		let run = () => action(done);
@@ -283,6 +283,52 @@ Connection.prototype.findBuckets = function(options, callback) {
 			done(null, response.body);
 		});
 	}, callback);
+};
+
+// @TODO depend on xml2json package
+// /**
+//  * Find some objects from remote storage.
+//  * @param  {Object}           options
+//  * @param  {string}           options              regarded as options.prefix
+//  * @param  {string}          [options.bucket]      bucket name
+//  * @param  {char}            [options.delimiter]   path delimiter, READMORE for details
+//  * @param  {string}          [options.prefix]      prefix of name(key) of objects
+//  * @param  {number}          [options.max-keys]    maximum number of returned objects.
+//  *
+//  */
+// Connection.prototype.findObjects = function(options, callback) {
+//     // ---------------------------
+// 	// Uniform arguments.
+
+//     if (typeof arguments[0] == 'function') {
+//         callback = arguments[0];
+//         options = {};
+//     }
+//     else if (typeof options == 'string') {
+// 		options = { prefix: options };
+//     }
+//     else {
+// 		options = Object.assign({}, options);
+//     }
+
+//     // Use property of current connection as default.
+// 	setIfHasNot(options, 'bucket', this.bucket);
+    
+//     return this._action((done) => {
+//         let urlname = modifyUrl.query(`${options.bucket}`, cloneObject(options, [ 'delimiter', 'max-keys', 'prefix' ]));
+//         this.agent.get(urlname, (err, response) => {
+//             if (err) return done(err);			
+// 			// ...
+// 			done(null, response.body);
+// 		});
+// 	}, callback);
+// };
+
+Connection.prototype.get = function(name) {
+    switch (name.toLowerCase()) {
+		case 'endpoint'    : return this.endPoint;
+		case 'bucket'      : return this.bucket;
+	}
 };
 
 // AWS authentication uses signature generated with AWS secret access key, without 

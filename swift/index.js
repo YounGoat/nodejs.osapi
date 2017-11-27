@@ -44,6 +44,7 @@ const MODULE_REQUIRE = 1
 	, modifyUrl = require('jinang/modifyUrl')
 		
 	/* in-package */
+	, Receiver = noda.inRequire('lib/Receiver')
 	, setIfHasNot = noda.inRequire('lib/setIfHasNot')
 	
 	// Customized errors.
@@ -144,7 +145,7 @@ const Connection = function(options) {
 				// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
 				this.storageToken = res.headers['x-storage-token'];
 
-				this.agent = new SimpleAgent({
+				let agentOptions = {
 					endPoint: this.storageUrl,
 
 					// Query "format" is prior to header "Accept".
@@ -156,7 +157,13 @@ const Connection = function(options) {
 						// Header "Accept" is inferior to query "format".
 						'Accept': 'application/json',
 					}
-				});
+				};
+
+				let pipingAgentOptions = Object.assign({}, agentOptions, 
+					{ settings: { piping : true, pipingOnly : true } });
+
+				this.agent = new SimpleAgent(agentOptions);
+				this.pipingAgent = new SimpleAgent(pipingAgentOptions);
 
 				this.emit('connected');
 			}
@@ -452,6 +459,16 @@ Connection.prototype.generateTempUrl = function(options, callback) {
 	}, callback);
 };
 
+Connection.prototype.get = function(name) {
+	switch (name.toLowerCase()) {
+		case 'endpoint'    : return this.endPoint;
+		case 'username'    : return this.username;
+		case 'subusername' : return this.subUsername;
+		case 'subuser'     : return this.subuser;
+		case 'container'   : return this.container;
+	}
+};
+
 /**
  * To learn whether connection created successfully.
  * @return {boolean} true if connected
@@ -502,6 +519,63 @@ Connection.prototype.readObject = function(options, callback) {
 			done(err, data);
 		});
 	}, callback);
+};
+
+/**
+ * Retrieve an object from remote storage.
+ * @param  {Object}           options
+ * @param  {string}           options              regard as options.name
+ * @param  {string}          [options.container]   container name
+ * @param  {string}          [options.name]        name(key) of object
+ * @param  {Function}        [callback]
+ * @return {stream.Readable}
+ */
+Connection.prototype.pullObject = function(options, callback) {
+	// ---------------------------
+	// Uniform arguments.
+	
+	if (typeof options == 'string') {
+		options = { name: options };
+	}
+	else {
+		options = Object.assign({}, options);
+	}
+	
+	// Use property of current connection as default.
+	if (!options.hasOwnProperty('container')) {
+		options.container = this.container;
+	}
+	
+	let urlname = appendQuery(`${options.container}/${options.name}`, options, []);
+	let output = new Receiver();
+	let onCall = (err, meta) => {
+		if (err) {
+			output.emit('error', err);
+		}
+		callback && callback(err, meta);
+	};
+
+	this._action((done) => {
+		let meta = {};
+
+		this.pipingAgent.get(urlname)
+			.on('error', done)
+			.on('response', (response) => {
+				if (response.statusCode == '404') {
+					done(new Error('object not found'));
+				}
+				else {
+					meta.contentType = response.headers['content-type'];
+					output.emit('meta', meta);
+				}
+			})
+			.on('end', () => {
+				done(null, meta);
+			})
+			.pipe(output)
+			;
+	}, onCall);
+	return output;
 };
 
 module.exports = {

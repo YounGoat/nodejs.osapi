@@ -5,8 +5,7 @@ __A common Object Storage API__
 [![osapi's License](https://img.shields.io/npm/l/osapi.svg)](https://www.npmjs.com/package/osapi)
 [![latest version of osapi](https://img.shields.io/npm/v/osapi.svg)](https://www.npmjs.com/package/osapi)
 
-[简体中文](./README.zh_CN.md)
-[繁体中文](./README.zh_TW.md)
+Languages / [简体中文](./README.zh_CN.md) / [繁體中文](./README.zh_TW.md)
 
 This API is compatible with CEPH object storage, so the package is also named __[ceph](https://www.npmjs.com/package/ceph)__. You may install and require one of `osapi` and `ceph` at your will.
 
@@ -81,6 +80,7 @@ Generally, methods of class `Connection` are ASYNCHRONOUS:
 *	Otherwise, `callback` SHOULD be passed at the end of the arguments.
 *	And, in style `callback(error, data)`.
 
+
 ###	osapi/swift
 
 Before we find a way to offer a better set of APIs for object storage, __osapi/swift__ will be the default entry of __osapi__. 
@@ -93,9 +93,17 @@ const swift = require('osapi');
 
 *	new __swift.Connection__(*object* options)
 *	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
-*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
+
+*	*stream.Readable* __\<conn\>.pullObject__(*object | string* options [, *function* callback ])  
+	The return stream may emit following events:
+	-	__meta__  
+		Along with argument *meta* which contains metadata of the object. 
+	-	events which a readable stream may emit  
+		See [Class: stream.Readable](https://nodejs.org/dist/latest/docs/api/stream.html#stream_class_stream_readable) for details.
+
+*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
 
 ###	osapi/s3
 

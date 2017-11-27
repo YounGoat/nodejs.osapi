@@ -5,8 +5,7 @@ __通用對象存儲應用程式界面__
 [![osapi's License](https://img.shields.io/npm/l/osapi.svg)](https://www.npmjs.com/package/osapi)
 [![latest version of osapi](https://img.shields.io/npm/v/osapi.svg)](https://www.npmjs.com/package/osapi)
 
-[英文](./README.md)
-[简体中文](./README.zh_CN.md)
+其他语言 / [English](./README.md) / [简体中文](./README.zh_CN.md)
 
 這套 API 很好地相容了 CEPH 對象存儲服務，因此取 __[ceph](https://www.npmjs.com/package/ceph)__ 作為本包的別名。你可以按照個人喜好，引用 `osapi` 或 `ceph` 包，兩個 NPM 包將保持同步更新。
 
