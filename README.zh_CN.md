@@ -80,14 +80,28 @@ conn.readObject('hello/world', (err, data) => {
 *	否则，`callback` 参数始终__应当__放在参数表的最末位置。
 *	并且，回调函数自身的参数表形如 `callback(error, data)`。
 
-###	osapi/swift
+###	自适应
 
-在我们找到一套更理想的 API 之前，__osapi/swift__ 将作为 __osapi__ 的默认入口。也就是说，以下两种引用方法等效：
+```javascript
+const osapi = require('osapi');
+
+// See osapi/swift and osapi/s3 for details of options and member methods of the created connection.
+const conn = osapi.createConnection(options);
+
+osapi.isConnection(conn);
+// RETURN: true
+
+osapi.getConnectionStyle(conn);
+// RETURN: 
+// * "s3"     if conn is instance of osapi/s3.Connection
+// * "swift"  if conn is instance of osapi/swift.Connection
+// * null     otherwise
+```
+
+###	osapi/swift
 
 ```javascript
 const swift = require('osapi/swift');
-// OR
-const swift = require('osapi');
 ```
 
 *	new __swift.Connection__(*object* options)
@@ -95,6 +109,8 @@ const swift = require('osapi');
 *	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
+
+注意：自 0.1.0 版本起，__osapi__ 入口将独立发展为兼容 *s3* 和 *swift* 风格的工具类，不再默认指向 __osapi/swift__。
 
 ###	osapi/s3
 

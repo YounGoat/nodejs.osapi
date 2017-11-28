@@ -30,6 +30,29 @@ const MODULE_REQUIRE = 1
     , OptionsAbsentError = noda.inRequire('class/OptionAbsentError')
     ;
 
+/**
+ * Create a new connection to Ceph service.
+ * This is virtual connection.
+ * @class
+ * 
+ * @param  {Object}  options 
+ * 
+ * @param  {string}  options.endPoint      
+ * @param  {string}  options.serviceUrl    alias of "options.endPoint"
+ * 
+ * @param  {string} [options.accessKey]
+ * @param  {string} [options.key]          alias of "options.accessKey"
+ * @param  {string} [options.awsAccessKeyId]      
+ *                                         alias of "options.accessKey"
+ * 
+ * @param  {string} [options.secretAccessKey]
+ * @param  {string} [options.awsSecretAccessKey] 
+ *                                         alias of "options.secretAccessKey"
+ * @param  {string} [options.secretKey]    alias of "options.secretAccessKey"
+ * 
+ * @param  {string} [options.bucket]       
+ * @param  {string} [options.container]    alias of "options.bucket". Bucket is a concept of Amazon S3, it is known as "container" in OpenStack Swift.
+ */
 const Connection = function(options) {
     // Clone and uniform the input options.
     options = cloneObject(options, (key, value) => [ key.toLowerCase(), value ]);
@@ -326,6 +349,7 @@ Connection.prototype.findBuckets = function(options, callback) {
 
 Connection.prototype.get = function(name) {
     switch (name.toLowerCase()) {
+        case 'style'       : return 's3';
 		case 'endpoint'    : return this.endPoint;
 		case 'bucket'      : return this.bucket;
 	}

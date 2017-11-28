@@ -78,7 +78,7 @@ const MODULE_REQUIRE = 1
  * @param  {string} [options.password]     alias of "options.key"
  * 
  * @param  {string} [options.container]    
- * @param  {string} [options.bucket]       alias of "options.bucket". Bucket is a concept of Amazon S3, it is known as "container" in OpenStack Swift.
+ * @param  {string} [options.bucket]       alias of "options.container". Bucket is a concept of Amazon S3, it is known as "container" in OpenStack Swift.
  */
 const Connection = function(options) {
 	// Clone and uniform the input options.
@@ -461,6 +461,7 @@ Connection.prototype.generateTempUrl = function(options, callback) {
 
 Connection.prototype.get = function(name) {
 	switch (name.toLowerCase()) {
+		case 'style'       : return 'swift';
 		case 'endpoint'    : return this.endPoint;
 		case 'username'    : return this.username;
 		case 'subusername' : return this.subUsername;

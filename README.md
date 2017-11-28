@@ -80,10 +80,25 @@ Generally, methods of class `Connection` are ASYNCHRONOUS:
 *	Otherwise, `callback` SHOULD be passed at the end of the arguments.
 *	And, in style `callback(error, data)`.
 
+###	adaptive
+
+```javascript
+const osapi = require('osapi');
+
+// See osapi/swift and osapi/s3 for details of options and member methods of the created connection.
+const conn = osapi.createConnection(options);
+
+osapi.isConnection(conn);
+// RETURN: true
+
+osapi.getConnectionStyle(conn);
+// RETURN: 
+// * "s3"     if conn is instance of osapi/s3.Connection
+// * "swift"  if conn is instance of osapi/swift.Connection
+// * null     otherwise
+```
 
 ###	osapi/swift
-
-Before we find a way to offer a better set of APIs for object storage, __osapi/swift__ will be the default entry of __osapi__. 
 
 ```javascript
 const swift = require('osapi/swift');
@@ -95,6 +110,9 @@ const swift = require('osapi');
 *	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
 *	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
+
+ATTENTION: Since version 0.1.0, the entrance (main js) of __osapi__ will be a toolset compatiable with *swift* and *s3*, and will no longer refer to __osapi/swift__.
+
 
 *	*stream.Readable* __\<conn\>.pullObject__(*object | string* options [, *function* callback ])  
 	The return stream may emit following events:

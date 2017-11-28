@@ -1,8 +1,8 @@
 {
     "name": "ceph",
-    "version": "0.0.5",
+    "version": "0.1.0",
     "description": "A common Object Storage API",
-    "main": "swift/index.js",
+    "main": "index.js",
     "scripts": {
         "test": "node test"
     },
