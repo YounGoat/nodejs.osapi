@@ -110,18 +110,15 @@ const swift = require('osapi');
 *	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
 *	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
-
-ATTENTION: Since version 0.1.0, the entrance (main js) of __osapi__ will be a toolset compatiable with *swift* and *s3*, and will no longer refer to __osapi/swift__.
-
-
 *	*stream.Readable* __\<conn\>.pullObject__(*object | string* options [, *function* callback ])  
 	The return stream may emit following events:
 	-	__meta__  
 		Along with argument *meta* which contains metadata of the object. 
 	-	events which a readable stream may emit  
 		See [Class: stream.Readable](https://nodejs.org/dist/latest/docs/api/stream.html#stream_class_stream_readable) for details.
-
 *	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
+
+ATTENTION: Since version 0.1.0, the entrance (main js) of __osapi__ will be a toolset compatiable with *swift* and *s3*, and will no longer refer to __osapi/swift__.
 
 ###	osapi/s3
 

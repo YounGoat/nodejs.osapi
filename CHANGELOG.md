@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##  [0.1.1] - Nov 29, 2017
+
+*   README edited.
+
 ##  [0.1.0] - Nov 28, 2017
 
 *   Main enterance of the package turned from `swift/index.js` to `index.js`. And since now, the main enterance will evolve independently of `osapi/swift`.

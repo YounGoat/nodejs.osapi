@@ -106,9 +106,15 @@ const swift = require('osapi/swift');
 
 *	new __swift.Connection__(*object* options)
 *	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
-*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
+*	*stream.Readable* __\<conn\>.pullObject__(*object | string* options [, *function* callback ])  
+	返回的流对象可以触发以下事件:
+	-	__meta__  
+		携带参数 *meta*，包含有存储对象的元数据键值对。
+	-	只读流对象可以触发的其他事件    
+		详见 [Class: stream.Readable](https://nodejs.org/dist/latest/docs/api/stream.html#stream_class_stream_readable)。
+*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
 
 注意：自 0.1.0 版本起，__osapi__ 入口将独立发展为兼容 *s3* 和 *swift* 风格的工具类，不再默认指向 __osapi/swift__。
 
