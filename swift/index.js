@@ -130,8 +130,11 @@ const Connection = function(options) {
 			'X-Auth-Key'  : key,
 		};
 		htp.get(authurl, headers, (err, res) => {
-			if (err || res.statusCode != 204) {
+			if (err) {
 				this.emit('error', err);
+			}
+			else if (res.statusCode != 204) {
+				this.emit('error', new Error(`Failed to connect to server: ${res.statusCode} ${res.statusMessage}`))
 			}
 			else {
 				// Optional.
@@ -169,6 +172,8 @@ const Connection = function(options) {
 			}
 		});
 	}
+
+	this.setMaxListeners(100000);
 };
 
 // Inherit class EventEmitter in order to invoke methods .emit(), .on(), .once() etc.

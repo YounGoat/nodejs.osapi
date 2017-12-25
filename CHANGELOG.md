@@ -2,6 +2,11 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.1.2] - Dec 25, 2017
+
+*	Upgrade depedency __htp__ from version `^0.2.1` to `^0.4.0`.
+*	Fixed the `too many listeners` bug.
+
 ##  [0.1.1] - Nov 29, 2017
 
 *   README edited.

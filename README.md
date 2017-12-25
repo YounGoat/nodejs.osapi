@@ -1,6 +1,10 @@
 #	osapi
 __A common Object Storage API__
 
+[![total downloads of ceph](https://img.shields.io/npm/dt/ceph.svg)](https://www.npmjs.com/package/ceph)
+[![ceph's License](https://img.shields.io/npm/l/ceph.svg)](https://www.npmjs.com/package/ceph)
+[![latest version of ceph](https://img.shields.io/npm/v/ceph.svg)](https://www.npmjs.com/package/ceph)
+
 [![total downloads of osapi](https://img.shields.io/npm/dt/osapi.svg)](https://www.npmjs.com/package/osapi)
 [![osapi's License](https://img.shields.io/npm/l/osapi.svg)](https://www.npmjs.com/package/osapi)
 [![latest version of osapi](https://img.shields.io/npm/v/osapi.svg)](https://www.npmjs.com/package/osapi)
@@ -10,6 +14,14 @@ Languages / [简体中文](./README.zh_CN.md) / [繁體中文](./README.zh_TW.md
 This API is compatible with CEPH object storage, so the package is also named __[ceph](https://www.npmjs.com/package/ceph)__. You may install and require one of `osapi` and `ceph` at your will.
 
 There are two styles available: OpenStack *SWIFT* and Amazon *S3*.
+
+##	Table Of Contents
+
+*	[Get Started](#get-started)
+*	[API](#api)
+*	[Terms](#terms)
+*	[About](#about)
+*	[References](#references)
 
 ##	Get Started
 
@@ -102,8 +114,6 @@ osapi.getConnectionStyle(conn);
 
 ```javascript
 const swift = require('osapi/swift');
-// OR
-const swift = require('osapi');
 ```
 
 *	new __swift.Connection__(*object* options)
@@ -145,6 +155,12 @@ Amazon Simple Storage Service (S3) and OpenStack Swift are similiar but still tw
 |                      | temp\_url\_key | Secret token used to generate temporary downloading URLs for objects. |
 |                      | user           | Account. |
 |                      | subuser        | User under specified account. |
+
+##	About
+
+For convenience, this package has following names (alias):
+*	[ceph](https://www.npmjs.com/package/ceph)
+*	[osapi](https://www.npmjs.com/package/osapi)
 
 ##  References
 

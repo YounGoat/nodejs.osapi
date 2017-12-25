@@ -48,9 +48,9 @@ const s3 = require('osapi/s3');
 let conn = new s3.Connection({
     endPoint        : 'http://storage.example.com/',
     accessKey       : '380289ba59473a368c59', 
-                      // 20 characters 
+                       // 20 characters 
     secretAccessKey : '380289ba59473a368c593c1f1de6efb0380289ba5', 
-                      // 40 characters
+                       // 40 characters
     bucket          : 'bucketName',
 });
 

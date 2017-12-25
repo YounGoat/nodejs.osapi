@@ -1,6 +1,6 @@
 {
-    "name": "osapi",
-    "alias": "ceph",
+    "name": "ceph",
+    "alias": "osapi",
 	"badges": [
 		"npm.*"
 	]
