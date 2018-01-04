@@ -2,7 +2,11 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
-##	[0.1.3] - Jan 4, 2017
+##	[0.2.0] - Jan 5, 2018
+
+*	Update dependencies.
+
+##	[0.1.3] - Jan 4, 2018
 
 *	Customised Error [__RequestRefusedError__](./README.md#customised-error) added.
 
