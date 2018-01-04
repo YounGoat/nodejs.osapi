@@ -1,14 +1,6 @@
 #	osapi
 __A common Object Storage API__
 
-[![total downloads of ceph](https://img.shields.io/npm/dt/ceph.svg)](https://www.npmjs.com/package/ceph)
-[![ceph's License](https://img.shields.io/npm/l/ceph.svg)](https://www.npmjs.com/package/ceph)
-[![latest version of ceph](https://img.shields.io/npm/v/ceph.svg)](https://www.npmjs.com/package/ceph)
-
-[![total downloads of osapi](https://img.shields.io/npm/dt/osapi.svg)](https://www.npmjs.com/package/osapi)
-[![osapi's License](https://img.shields.io/npm/l/osapi.svg)](https://www.npmjs.com/package/osapi)
-[![latest version of osapi](https://img.shields.io/npm/v/osapi.svg)](https://www.npmjs.com/package/osapi)
-
 Languages / [简体中文](./README.zh_CN.md) / [繁體中文](./README.zh_TW.md)
 
 This API is compatible with CEPH object storage, so the package is also named __[ceph](https://www.npmjs.com/package/ceph)__. You may install and require one of `osapi` and `ceph` at your will.
@@ -142,6 +134,17 @@ const swift = require('osapi/s3');
 *	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
 
+###	Customised Error
+
+*	class __OptionAbsentError__
+*	class __RequestRefusedError__
+	-	string __\<instance\>.action__
+	-	Object __\<instance\>.meta__
+	-	Object __\<instance\>.response__
+		+	number __statusCode__
+		+	string __statusMessage__
+		+	string __code__
+
 ##  Terms
 
 Amazon Simple Storage Service (S3) and OpenStack Swift are similiar but still two different things.
@@ -149,12 +152,12 @@ Amazon Simple Storage Service (S3) and OpenStack Swift are similiar but still tw
 | S3                   | SWIFT          | meaning        |
 | :----------------    | :------------- | :------------- |
 | bucket               | container      | An container belongs to one account and is used to store objects. |
-| access_key           |                | Unique token used to identify an account. |
-| secret\_secret\_key  |                | Secret token accompanying the *access_key* and used to verify the requests. |
-|                      | key            | Secret token used to generate access token for current subuser. |
-|                      | temp\_url\_key | Secret token used to generate temporary downloading URLs for objects. |
-|                      | user           | Account. |
-|                      | subuser        | User under specified account. |
+| access_key           | -              | Unique token used to identify an account. |
+| secret\_secret\_key  | -              | Secret token accompanying the *access_key* and used to verify the requests. |
+| -                    | key            | Secret token used to generate access token for current subuser. |
+| -                    | temp\_url\_key | Secret token used to generate temporary downloading URLs for objects. |
+| -                    | user           | Account. |
+| -                    | subuser        | User under specified account. |
 
 ##	About
 

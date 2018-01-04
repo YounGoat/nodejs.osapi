@@ -48,6 +48,7 @@ const MODULE_REQUIRE = 1
 	, setIfHasNot = noda.inRequire('lib/setIfHasNot')
 	
 	// Customized errors.
+	, RequestRefusedError = noda.inRequire('class/RequestRefusedError')
 	, OptionsAbsentError = noda.inRequire('class/OptionAbsentError')
 
 	/* in-file */
@@ -130,46 +131,41 @@ const Connection = function(options) {
 			'X-Auth-Key'  : key,
 		};
 		htp.get(authurl, headers, (err, res) => {
-			if (err) {
-				this.emit('error', err);
-			}
-			else if (res.statusCode != 204) {
-				this.emit('error', new Error(`Failed to connect to server: ${res.statusCode} ${res.statusMessage}`))
-			}
-			else {
-				// Optional.
-				this.authToken = res.headers['x-auth-token'];
-		
-				// The URL and {api version}/{account} path for the user.
-				// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
-				this.storageUrl = res.headers['x-storage-url'];
+			err = err || this._parseResponseError('AUTH', null, [ 204 ], res);
+			if (err) return this.emit('error', err), undefined;
 
-				// The authorization token for the X-Auth-User specified in the request.
-				// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
-				this.storageToken = res.headers['x-storage-token'];
+			// Optional.
+			this.authToken = res.headers['x-auth-token'];
+	
+			// The URL and {api version}/{account} path for the user.
+			// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
+			this.storageUrl = res.headers['x-storage-url'];
 
-				let agentOptions = {
-					endPoint: this.storageUrl,
+			// The authorization token for the X-Auth-User specified in the request.
+			// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
+			this.storageToken = res.headers['x-storage-token'];
 
-					// Query "format" is prior to header "Accept".
-					// query: 'format=json',
+			let agentOptions = {
+				endPoint: this.storageUrl,
 
-					headers: { 
-						'X-Auth-Token': this.storageToken,
+				// Query "format" is prior to header "Accept".
+				// query: 'format=json',
 
-						// Header "Accept" is inferior to query "format".
-						'Accept': 'application/json',
-					}
-				};
+				headers: { 
+					'X-Auth-Token': this.storageToken,
 
-				let pipingAgentOptions = Object.assign({}, agentOptions, 
-					{ settings: { piping : true, pipingOnly : true } });
+					// Header "Accept" is inferior to query "format".
+					'Accept': 'application/json',
+				}
+			};
 
-				this.agent = new SimpleAgent(agentOptions);
-				this.pipingAgent = new SimpleAgent(pipingAgentOptions);
+			let pipingAgentOptions = Object.assign({}, agentOptions, 
+				{ settings: { piping : true, pipingOnly : true } });
 
-				this.emit('connected');
-			}
+			this.agent = new SimpleAgent(agentOptions);
+			this.pipingAgent = new SimpleAgent(pipingAgentOptions);
+
+			this.emit('connected');
 		});
 	}
 
@@ -211,6 +207,29 @@ Connection.prototype._action = function(action, callback) {
 };
 
 /**
+ * Generate a standard RequestRefusedError by parsing the response from remote storage service.
+ * @param {Object}       options
+ * @param {string}       options.action
+ * @param {Object}       options.meta
+ * @param {number[]}     options.expect expected status codes
+ * @param {htp.Response} options.response
+ */
+Connection.prototype._parseResponseError = function(action, meta, expect, response) {
+	if (expect.includes(response.statusCode)) {
+		return null;
+	}
+	else {
+		let code = response.body && response.body.Code;
+		let res = {
+			statusCode: response.statusCode,
+			statusMessage: response.statusMessage,
+			code,
+		};
+		return new RequestRefusedError(action, meta, res);
+	}
+
+};
+/**
  * Create new container(bucket) on remote storage.
  * @param  {Object}           options
  * @param  {string}           options            regard as the name(key) of object to be stored
@@ -239,7 +258,7 @@ Connection.prototype.createContainer = function(options, callback) {
 					};
 				}
 				else {
-					err = new Error(`failed to create container: ${response.statusCode}`);
+					err = new ServerError('CREATE_CONTAINER', { name: options.name }, `failed to create container: ${response.statusCode}`);
 				}
 			}
 			done(err, data);
@@ -276,19 +295,16 @@ Connection.prototype.createObject = function(options, content, callback) {
 	return this._action((done) => {
 		let urlname = `${options.container}/${options.name}`;
 		this.agent.put(urlname, content, (err, response) => {
-			let data = null;
-			if (!err) {
-				if (response.statusCode == '201') {
-					data = {
-						transId: response.headers['x-trans-id'],
-						etag: response.headers['etag']
-					};
-				}
-				else {
-					err = new Error(`failed to create object: ${response.statusCode}`);
-				}
+			err = err || this._parseResponseError('OBJECT_CREATE', { name: options.name }, [ 201 ], response);
+			if (err) {
+				done(err, null);
 			}
-			done(err, data);
+			else {
+				done(null, {
+					transId: response.headers['x-trans-id'],
+					etag: response.headers['etag']
+				});
+			}
 		});
 	}, callback);
 };
@@ -317,9 +333,12 @@ Connection.prototype.deleteObject = function(options, callback) {
 	return this._action((done) => {
 		let urlname = `${options.container}/${options.name}`;
 		this.agent.delete(urlname, (err, response) => {
-			if (!err && response.statusCode != 204) {
-				err = new Error('failed to delete');
-			}
+			err = err || this._parseResponseError(
+				'OBJECT_DELETE', 
+				cloneObject(options, ['container', 'name']),
+				[ 204 ],
+				response
+			);
 			done(err);
 		});
 	}, callback);
@@ -510,18 +529,16 @@ Connection.prototype.readObject = function(options, callback) {
 	return this._action((done) => {
 		let urlname = appendQuery(`${options.container}/${options.name}`, options, []);
 		this.agent.get(urlname, (err, response) => {
-			let data = null;
-			if (!err) {
-				if (response.statusCode == '404') {
-					err = new Error('object not found');
-				}
-				else {
-					data = {
-						contentType: response.headers['content-type'],
-						buffer: response.bodyBuffer,
-					}
-				}
-			}
+			err = err || this._parseResponseError(
+				'OBJECT_GET', 
+				cloneObject(options, [ 'name' ]),
+				[ 200 ],
+				response
+			);
+			let data = err ? null : {
+				contentType: response.headers['content-type'],
+				buffer: response.bodyBuffer,
+			};
 			done(err, data);
 		});
 	}, callback);
@@ -567,8 +584,14 @@ Connection.prototype.pullObject = function(options, callback) {
 		this.pipingAgent.get(urlname)
 			.on('error', done)
 			.on('response', (response) => {
-				if (response.statusCode == '404') {
-					done(new Error('object not found'));
+				let err = this._parseResponseError(
+					'OBJECT_GET',
+					cloneObject(options, [ 'name' ]),
+					[ 200 ],
+					response
+				)
+				if (err) {
+					done(err);
 				}
 				else {
 					meta.contentType = response.headers['content-type'];

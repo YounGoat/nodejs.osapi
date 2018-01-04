@@ -1,7 +1,4 @@
 {
     "name": "ceph",
-    "alias": "osapi",
-	"badges": [
-		"npm.*"
-	]
+    "alias": "osapi"
 }

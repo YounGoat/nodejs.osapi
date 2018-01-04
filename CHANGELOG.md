@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.1.3] - Jan 4, 2017
+
+*	Customised Error [__RequestRefusedError__](./README.md#customised-error) added.
+
 ##	[0.1.2] - Dec 25, 2017
 
 *	Upgrade depedency __htp__ from version `^0.2.1` to `^0.4.0`.
