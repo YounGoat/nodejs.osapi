@@ -25,8 +25,8 @@ const swift = require('osapi/swift');
 let conn = new swift.Connection({
 	endPoint   : 'http://storage.example.com/',
 	subuser    : 'userName:subUserName',
-	key        : '380289ba59473a368c593c1f1de6efb0380289ba5', 
-                 // generally 40 characters 
+	key        : '380289ba59473a368c593c1f1de6efb0380289ba5',
+	             // generally 40 characters 
 	tempURLKey : '380289ba59473a368c593c1f1de6efb0', 
 	             // generally 32 characters
 	container  : 'containerName',

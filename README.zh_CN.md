@@ -22,7 +22,7 @@ let conn = new swift.Connection({
 	endPoint   : 'http://storage.example.com/',
 	subuser    : 'userName:subUserName',
 	key        : '380289ba59473a368c593c1f1de6efb0380289ba5', 
-                 // generally 40 characters 
+	             // generally 40 characters 
 	tempURLKey : '380289ba59473a368c593c1f1de6efb0', 
 	             // generally 32 characters
 	container  : 'containerName',
@@ -130,6 +130,17 @@ const swift = require('osapi/s3');
 *	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
 
+###	自定义异常
+
+*	class __OptionAbsentError__
+*	class __RequestRefusedError__
+	-	string __\<instance\>.action__
+	-	Object __\<instance\>.meta__
+	-	Object __\<instance\>.response__
+		+	number __statusCode__
+		+	string __statusMessage__
+		+	string __code__
+
 ##  术语
 
 亚马逊的简单存储服务（S3）和 OpenStack Swift 有相似之外，但仍然是两种不同的东西。
@@ -137,12 +148,12 @@ const swift = require('osapi/s3');
 | S3                   | SWIFT          | 含义 |
 | :----------------    | :------------- | :------------- |
 | bucket               | container      | 属于某个账户的、用于存储对象的容器。 |
-| access_key           |                | 用于识别账户的唯一标识串。 |
-| secret\_secret\_key  |                | 用于确认请求合法性的令牌，相当于密码。 |
-|                      | key            | 属于某个子用户，用于生成访问令牌的密钥。 |
-|                      | temp\_url\_key | 属于某个子用户，用于生成临时下载 URL 的密钥。 |
-|                      | user           | 对应某个账户。 |
-|                      | subuser        | 在指定账户下开设的子用户，用于区分不同的访问权限。 |
+| access_key           | -              | 用于识别账户的唯一标识串。 |
+| secret\_secret\_key  | -              | 用于确认请求合法性的令牌，相当于密码。 |
+| -                    | key            | 属于某个子用户，用于生成访问令牌的密钥。 |
+| -                    | temp\_url\_key | 属于某个子用户，用于生成临时下载 URL 的密钥。 |
+| -                    | user           | 对应某个账户。 |
+| -                    | subuser        | 在指定账户下开设的子用户，用于区分不同的访问权限。 |
 
 ##  参考
 

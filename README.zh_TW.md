@@ -124,6 +124,17 @@ const swift = require('osapi/s3');
 *	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
 *	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
 
+###	自定義異常
+
+*	class __OptionAbsentError__
+*	class __RequestRefusedError__
+	-	string __\<instance\>.action__
+	-	Object __\<instance\>.meta__
+	-	Object __\<instance\>.response__
+		+	number __statusCode__
+		+	string __statusMessage__
+		+	string __code__
+
 ##  術語
 
 亞馬遜的簡單存儲服務（S3）和 OpenStack Swift 有相似之外，但仍然是兩種不同的東西。
@@ -131,12 +142,12 @@ const swift = require('osapi/s3');
 | S3                   | SWIFT          | 含義 |
 | :----------------    | :------------- | :------------- |
 | bucket               | container      | 屬於某個賬戶的、用於存儲對象的容器。 |
-| access_key           |                | 用於識別賬戶的唯一標識串。 |
-| secret\_secret\_key  |                | 用於確認請求合法性的令牌，相當於密碼。 |
-|                      | key            | 屬於某個子用戶，用於生成訪問令牌的密鑰。 |
-|                      | temp\_url\_key | 屬於某個子用戶，用於生成臨時下載 URL 的密鑰。 |
-|                      | user           | 對應某個賬戶。 |
-|                      | subuser        | 在指定賬戶下開設的子用戶，用於區分不同的訪問權限。 |
+| access_key           | -              | 用於識別賬戶的唯一標識串。 |
+| secret\_secret\_key  | -              | 用於確認請求合法性的令牌，相當於密碼。 |
+| -                    | key            | 屬於某個子用戶，用於生成訪問令牌的密鑰。 |
+| -                    | temp\_url\_key | 屬於某個子用戶，用於生成臨時下載 URL 的密鑰。 |
+| -                    | user           | 對應某個賬戶。 |
+| -                    | subuser        | 在指定賬戶下開設的子用戶，用於區分不同的訪問權限。 |
 
 ##  參考
 
