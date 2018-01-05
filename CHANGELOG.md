@@ -2,6 +2,16 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.2.1] - Jan 5, 2018
+
+###	New
+
+*	Method `(new RequestRefusedError).print()` will format and output the error information.
+
+###	Fixed
+
+*	*ReferenceError: ServerError is not defined* throwed when `(new swift.Connection).createContainer()` failed.
+
 ##	[0.2.0] - Jan 5, 2018
 
 *	Update dependencies.

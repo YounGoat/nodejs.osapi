@@ -229,6 +229,7 @@ Connection.prototype._parseResponseError = function(action, meta, expect, respon
 	}
 
 };
+
 /**
  * Create new container(bucket) on remote storage.
  * @param  {Object}           options
@@ -250,17 +251,15 @@ Connection.prototype.createContainer = function(options, callback) {
 	return this._action((done) => {
 		let urlname = options.name;
 		this.agent.put(urlname, '', (err, response) => {
-			let data = null;
-			if (!err) {
-				if (['201', '202'].includes(response.statusCode)) {
-					data = {
-						transId: response.headers['x-trans-id']
-					};
-				}
-				else {
-					err = new ServerError('CREATE_CONTAINER', { name: options.name }, `failed to create container: ${response.statusCode}`);
-				}
-			}
+			err = err || this._parseResponseError(
+				'CONTAINER_CREATE', 
+				cloneObject(options, ['name']),
+				[ 201, 202 ],
+				response
+			);
+			let data = err ? null : {
+				transId: response.headers['x-trans-id'],
+			};
 			done(err, data);
 		});
 	}, callback);

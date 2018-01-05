@@ -9,11 +9,26 @@ const MODULE_REQUIRE = 1
 	/* in-package */
 	;
 
-module.exports = defineError('RequestRefusedError', Error, function(action, meta, response) {
+function RequestRefusedError(action, meta, response) {
 	this.message = `Failed on requesting remote storage`;
 	this.action = action;
 	this.meta = meta;
 	this.response = response;
+	
+	this.toString = function() {
+		return [ 'RequestRefusedError', this.action, JSON.stringify(this.meta), JSON.stringify(this.response) ].join(' ');
+	};
 
-	this.toString = () => [ 'RequestRefusedError', action, JSON.stringify(meta), JSON.stringify(response) ].join(' ');
-});
+	this.print = function() {
+		console.log('RequestRefusedError');
+		console.log('Action:', this.action);
+		console.log('Message:', this.message);
+		console.log('Meta:', JSON.stringify(this.meta));
+		console.log('Response:');
+		console.log('\tstatusCode:', this.response.statusCode);
+		console.log('\tstatusMessage:', this.response.statusMessage);
+		console.log('\tcode:', this.response.code);
+	};
+}
+
+module.exports = defineError('RequestRefusedError', Error, RequestRefusedError);

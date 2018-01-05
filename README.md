@@ -144,6 +144,7 @@ const swift = require('osapi/s3');
 		+	number __statusCode__
 		+	string __statusMessage__
 		+	string __code__
+	-	void __\<instance\>.print__()
 
 ##  Terms
 
