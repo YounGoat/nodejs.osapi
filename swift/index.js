@@ -225,9 +225,9 @@ Connection.prototype._parseResponseError = function(action, meta, expect, respon
 			statusMessage: response.statusMessage,
 			code,
 		};
-		return new RequestRefusedError(action, meta, res);
+		let err = new RequestRefusedError(action, meta, res);
+		return err;
 	}
-
 };
 
 /**
@@ -356,6 +356,10 @@ Connection.prototype.findContainers = function(options, callback) {
 	if (typeof arguments[0] == 'function') {
 		options = {};
 		callback = arguments[0];
+	}
+
+	if (!options) {
+		options = {};
 	}
 
 	return this._action((done) => {
@@ -588,7 +592,7 @@ Connection.prototype.pullObject = function(options, callback) {
 					cloneObject(options, [ 'name' ]),
 					[ 200 ],
 					response
-				)
+				);
 				if (err) {
 					done(err);
 				}
