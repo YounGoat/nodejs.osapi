@@ -2,6 +2,23 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.3.0] - Jan 10, 2018
+
+###	News
+
+*	Method `(new swift.Connection).createContainer()` released.
+*	Method `(new swift.Connection).deleteContainer()` released.
+*	Method `(new swift.Connection).findContainers()` released.
+*	Method `(new swift.Connection).findObjects()` released.
+
+###	Fixed
+
+*	Fixed the bug that method `(new swift.Connection).findObjects()`
+
+###	Others
+
+*	Dependencies upgraded.
+
 ##	[0.2.1] - Jan 5, 2018
 
 ###	New

@@ -1,6 +1,6 @@
 {
     "name": "ceph",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "description": "A common Object Storage API",
     "main": "index.js",
     "scripts": {
@@ -14,9 +14,9 @@
     "license": "ISC",
     "bin": {},
     "dependencies": {
-        "htp": "^0.4.3",
-        "if2": "^0.1.2",
-        "jinang": "^0.4.0",
+        "htp": "^0.5.0",
+        "if2": "^0.2.0",
+        "jinang": "^0.5.0",
         "noda": "^0.1.2"
     },
     "devDependencies": {},

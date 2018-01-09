@@ -108,17 +108,21 @@ osapi.getConnectionStyle(conn);
 const swift = require('osapi/swift');
 ```
 
-*	new __swift.Connection__(*object* options)
-*	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
-*	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
-*	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
-*	*stream.Readable* __\<conn\>.pullObject__(*object | string* options [, *function* callback ])  
+*	new __swift.Connection__(object *options*)
+*	Promise | void __\<conn\>.createContainer__(object | string *options* [, Function *callback* ])
+*	Promise | void __\<conn\>.createObject__(object | string *options*, *content* [, Function *callback* ])
+*	Promise | void __\<conn\>.deleteContainer__(bject | string *options* [, Function *callback* ])
+*	Promise | void __\<conn\>.deleteObject__(object | string *options* [, Function *callback* ])
+*	Promise | void __\<conn\>.findContainers__(object *options* [, Function *callback* ])
+*	Promise | void __\<conn\>.findObjects__(object *options* [, Function *callback* ])
+*	Promise | void __\<conn\>.generateTempUrl__(object | string *options* [, Function *callback* ])
+*	stream.Readable __\<conn\>.pullObject__(object | string *options* [, Function *callback* ])  
 	The return stream may emit following events:
 	-	__meta__  
 		Along with argument *meta* which contains metadata of the object. 
 	-	events which a readable stream may emit  
 		See [Class: stream.Readable](https://nodejs.org/dist/latest/docs/api/stream.html#stream_class_stream_readable) for details.
-*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
+*	Promise | void __\<conn\>.readObject__(object | string *options* [, Function *callback* ])
 
 ATTENTION: Since version 0.1.0, the entrance (main js) of __osapi__ will be a toolset compatiable with *swift* and *s3*, and will no longer refer to __osapi/swift__.
 
@@ -128,11 +132,11 @@ ATTENTION: Since version 0.1.0, the entrance (main js) of __osapi__ will be a to
 const swift = require('osapi/s3');
 ```
 
-*	new __s3.Connection__(*object* options)
-*	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
-*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
-*	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
-*	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
+*	new __s3.Connection__(object *options*)
+*	Promise | void __\<conn\>.createObject__(object | string *options*, content [, Function *callback* ])
+*	Promise | void __\<conn\>.readObject__(object | string *options* [, Function *callback* ])
+*	Promise | void __\<conn\>.deleteObject__(object | string *options* [, Function *callback* ])
+*	Promise | void __\<conn\>.generateTempUrl__(object | string *options* [, Function *callback* ])
 
 ###	Customised Error
 

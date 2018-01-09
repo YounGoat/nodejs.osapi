@@ -311,6 +311,37 @@ Connection.prototype.createObject = function(options, content, callback) {
 /**
  * @param  {Object}           options
  * @param  {string}           options              regard as options.name
+ * @param  {string}          [options.name]        container name
+ * @param  {Function}        [callback]
+ */
+Connection.prototype.deleteContainer = function(options, callback) {
+	// ---------------------------
+	// Uniform arguments.
+	
+	if (typeof options == 'string') {
+		options = { name: options };
+	}
+	else {
+		options = Object.assign({}, options);
+	}
+	
+	return this._action((done) => {
+		let urlname = `${options.name}`;
+		this.agent.delete(urlname, (err, response) => {
+			err = err || this._parseResponseError(
+				'CONTAINER_DELETE', 
+				cloneObject(options, ['name']),
+				[ 204 ],
+				response
+			);
+			done(err);
+		});
+	}, callback);
+};
+
+/**
+ * @param  {Object}           options
+ * @param  {string}           options              regard as options.name
  * @param  {string}          [options.container]   container name
  * @param  {string}          [options.name]        name(key) of object
  * @param  {Function}        [callback]
@@ -427,10 +458,15 @@ Connection.prototype.findObjects = function(options, callback) {
 	return this._action((done) => {
 		let urlname = appendQuery(`${options.container}`, options, [ 'delimiter', 'limit', 'path', 'prefix' ]);
 		this.agent.get(urlname, (err, response) => {
-			if (err) return done(err);
+			err = err || this._parseResponseError(
+				'OBJECT_FIND', 
+				cloneObject(options, [ 'container' ]),
+				[ 200, 204 ],
+				response
+			);
 			
-			// ...
-			done(null, response.body);
+			let data = err ? null : response.body;
+			done(err, data);
 		});
 	}, callback);
 };
