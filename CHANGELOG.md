@@ -2,6 +2,15 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.4.0] - Feb 8th, 2018
+
+*	Option property `contentType` supported in Method `(new swift.Connection).createObject()`.
+*	Return more object meta information in `(new swift.Connection).pullObject().on('meta')` and `(new swift.Connection).findObjects()`:
+	-	__contentType__
+	-	__contentLength__
+	-	__lastModified__
+*	[RISKY] In methods of `(new swift.Connection)`, encode container/object name in order to operate with those whose names contains special characters (e.g. whitespaces).
+
 ##	[0.3.0] - Jan 10, 2018
 
 ###	News

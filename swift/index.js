@@ -42,6 +42,7 @@ const MODULE_REQUIRE = 1
 	// Jin-nang tools.
 	, cloneObject = require('jinang/cloneObject')
 	, modifyUrl = require('jinang/modifyUrl')
+	, parseOptions = require('jinang/parseOptions')
 		
 	/* in-package */
 	, Receiver = noda.inRequire('lib/Receiver')
@@ -52,14 +53,37 @@ const MODULE_REQUIRE = 1
 	, OptionsAbsentError = noda.inRequire('class/OptionAbsentError')
 
 	/* in-file */
-	, appendQuery = (urlname, options, queryNames) => {
-		let querys = cloneObject(options, queryNames);
-		let query = querystring.stringify(querys);
-		if (query) {
-			urlname = `${urlname}?${query}`;
+	, encodeAndAppendQuery = (urlname, options, queryNames) => {
+		urlname = urlname.split('/').map(encodeURIComponent).join('/');
+
+		if (options) {
+			let querys = queryNames ? cloneObject(options, queryNames) : options;
+			let query = querystring.stringify(querys);
+			if (query) {
+				urlname += `?${query}`;
+			}
 		}
+
 		return urlname;
-	};
+	}
+	
+	// Retrieve object meta information from response.
+	, parseObjectMeta = (response) => {
+		let def = {
+			caseSensitive: false,
+			keepNameCase: true,
+			explicit: true,
+			columns: [
+				'contentType alias(content-type)',
+				'contentLength alias(content-length)',
+				{ name: 'lastModified', alias: 'last-modified', parser: t => new Date(t) },
+			],
+		};
+		return parseOptions(response.headers, def);
+	}
+
+	, encodeName = (name) => encodeURIComponent(name)
+	;
 
 /**
  * Create a new connection to Ceph service.
@@ -249,7 +273,7 @@ Connection.prototype.createContainer = function(options, callback) {
 	}
 
 	return this._action((done) => {
-		let urlname = options.name;
+		let urlname = encodeAndAppendQuery(options.name);
 		this.agent.put(urlname, '', (err, response) => {
 			err = err || this._parseResponseError(
 				'CONTAINER_CREATE', 
@@ -292,8 +316,17 @@ Connection.prototype.createObject = function(options, content, callback) {
 	setIfHasNot(options, 'container', this.container);
 
 	return this._action((done) => {
-		let urlname = `${options.container}/${options.name}`;
-		this.agent.put(urlname, content, (err, response) => {
+		let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`);
+
+		let headers = parseOptions(options, {
+			caseSensitive: false,
+			explicit: true,
+			columns: [
+				'content-type alias(contentType)',
+			]
+		});
+
+		this.agent.put(urlname, headers, content, (err, response) => {
 			err = err || this._parseResponseError('OBJECT_CREATE', { name: options.name }, [ 201 ], response);
 			if (err) {
 				done(err, null);
@@ -326,7 +359,7 @@ Connection.prototype.deleteContainer = function(options, callback) {
 	}
 	
 	return this._action((done) => {
-		let urlname = `${options.name}`;
+		let urlname = encodeAndAppendQuery(`${options.name}`);
 		this.agent.delete(urlname, (err, response) => {
 			err = err || this._parseResponseError(
 				'CONTAINER_DELETE', 
@@ -361,7 +394,7 @@ Connection.prototype.deleteObject = function(options, callback) {
 	setIfHasNot(options, 'container', this.container);
 	
 	return this._action((done) => {
-		let urlname = `${options.container}/${options.name}`;
+		let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`);
 		this.agent.delete(urlname, (err, response) => {
 			err = err || this._parseResponseError(
 				'OBJECT_DELETE', 
@@ -394,7 +427,7 @@ Connection.prototype.findContainers = function(options, callback) {
 	}
 
 	return this._action((done) => {
-		let urlname = appendQuery('/', options, [ 'limit', 'marker' ]);
+		let urlname = encodeAndAppendQuery('/', options, [ 'limit', 'marker' ]);
 		this.agent.get(urlname, (err, response) => {
 			if (err) return done(err);
 			
@@ -410,6 +443,7 @@ Connection.prototype.findContainers = function(options, callback) {
  * @param  {string}           options              regarded as options.prefix
  * @param  {string}          [options.container]   container name
  * @param  {char}            [options.delimiter]   path delimiter, READMORE for details
+ * @param  {string}          [options.marker]      name of object reached in last time
  * @param  {string}          [options.prefix]      prefix of name(key) of objects
  * @param  {string}          [options.path]        leading path
  * @param  {number}          [options.limit]       maximum number of returned objects.
@@ -438,8 +472,9 @@ Connection.prototype.findContainers = function(options, callback) {
  * options.path "foo" matches [1][2]
  * options.path "fo" matches NONE
  * options.prefix "fo" matches [1][2]
- * ATTENTION: Don't add leading slash(/) to options.path or options.prefix, 
- * otherwise nothing will be matched.
+ * 
+ * -- READMORE: should name prefixed with / ? --
+ * 
  */
 Connection.prototype.findObjects = function(options, callback) {
 	// ---------------------------
@@ -456,7 +491,7 @@ Connection.prototype.findObjects = function(options, callback) {
 	setIfHasNot(options, 'container', this.container);
 	
 	return this._action((done) => {
-		let urlname = appendQuery(`${options.container}`, options, [ 'delimiter', 'limit', 'path', 'prefix' ]);
+		let urlname = encodeAndAppendQuery(`${options.container}`, options, [ 'delimiter', 'limit', 'path', 'prefix', 'marker' ]);
 		this.agent.get(urlname, (err, response) => {
 			err = err || this._parseResponseError(
 				'OBJECT_FIND', 
@@ -500,7 +535,7 @@ Connection.prototype.generateTempUrl = function(options, callback) {
 	setIfHasNot(options, 'ttl', 86400);
 	
 	return this._action((done) => {
-		let urlname = `${this.storageUrl}/${options.container}/${options.name}`;
+		let urlname = encodeAndAppendQuery(`${this.storageUrl}/${options.container}/${options.name}`);
 		let temp_url_expires = parseInt(Date.now() / 1000) + options.ttl;
 		let temp_url_sig;
 	
@@ -566,7 +601,7 @@ Connection.prototype.readObject = function(options, callback) {
 	}
 	
 	return this._action((done) => {
-		let urlname = appendQuery(`${options.container}/${options.name}`, options, []);
+		let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`, options, []);
 		this.agent.get(urlname, (err, response) => {
 			err = err || this._parseResponseError(
 				'OBJECT_GET', 
@@ -574,10 +609,10 @@ Connection.prototype.readObject = function(options, callback) {
 				[ 200 ],
 				response
 			);
-			let data = err ? null : {
-				contentType: response.headers['content-type'],
-				buffer: response.bodyBuffer,
-			};
+			let data = err ? null : Object.assign(
+				parseObjectMeta(response), 
+				{ buffer: response.bodyBuffer }
+			);
 			done(err, data);
 		});
 	}, callback);
@@ -607,19 +642,19 @@ Connection.prototype.pullObject = function(options, callback) {
 	if (!options.hasOwnProperty('container')) {
 		options.container = this.container;
 	}
-	
-	let urlname = appendQuery(`${options.container}/${options.name}`, options, []);
+
+	let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`, options, []);
 	let output = new Receiver();
 	let onCall = (err, meta) => {
 		if (err) {
 			output.emit('error', err);
 		}
+		output.emit('error', 'yeserror');
 		callback && callback(err, meta);
 	};
 
+	let meta = null;
 	this._action((done) => {
-		let meta = {};
-
 		this.pipingAgent.get(urlname)
 			.on('error', done)
 			.on('response', (response) => {
@@ -633,7 +668,7 @@ Connection.prototype.pullObject = function(options, callback) {
 					done(err);
 				}
 				else {
-					meta.contentType = response.headers['content-type'];
+					meta = parseObjectMeta(response);
 					output.emit('meta', meta);
 				}
 			})
