@@ -649,7 +649,6 @@ Connection.prototype.pullObject = function(options, callback) {
 		if (err) {
 			output.emit('error', err);
 		}
-		output.emit('error', 'yeserror');
 		callback && callback(err, meta);
 	};
 

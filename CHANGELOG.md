@@ -2,11 +2,15 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
-##	[0.4.1] - Feb 8th, 2018
+##	[0.4.2] - Feb 8th, 2018
+
+*	Remove redundant debug code which was wrongly published in version 0.4.0 and 0.4.1 .
+
+##	[0.4.1@unpublished] - Feb 8th, 2018
 
 *	dependencies updated.
 
-##	[0.4.0] - Feb 8th, 2018
+##	[0.4.0@unpublished] - Feb 8th, 2018
 
 *	Option property `contentType` supported in Method `(new swift.Connection).createObject()`.
 *	Return more object meta information in `(new swift.Connection).pullObject().on('meta')` and `(new swift.Connection).findObjects()`:
