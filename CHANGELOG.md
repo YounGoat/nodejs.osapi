@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.4.1] - Feb 8th, 2018
+
+*	dependencies updated.
+
 ##	[0.4.0] - Feb 8th, 2018
 
 *	Option property `contentType` supported in Method `(new swift.Connection).createObject()`.
