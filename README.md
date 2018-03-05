@@ -1,8 +1,8 @@
 #	"osapi" or "ceph"
 __Common and CEPH Compatible Object Storage API__
 
-Other Languages / [简体中文](./README.zh_CN.md) / [繁體中文](./README.zh_TW.md)  
-If links in this document not avaiable, please access [README on GitHub](https://github.com/YounGoat/nodejs.osapi/blob/master/README.md) directly.
+>	Other Languages / [简体中文](./README.zh_CN.md) / [繁體中文](./README.zh_TW.md)  
+>	If links in this document not avaiable, please access [README on GitHub](https://github.com/YounGoat/nodejs.osapi/blob/master/README.md) directly.
 
 This API is compatible with CEPH object storage, so the package is also named __[ceph](https://www.npmjs.com/package/ceph)__. You may install and require one of `osapi` and `ceph` at your will. For simplicity, we use `osapi` hereinafter.
 
