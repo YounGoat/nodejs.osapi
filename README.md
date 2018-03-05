@@ -1,9 +1,8 @@
 #	"osapi" or "ceph"
 __Common and CEPH Compatible Object Storage API__
 
-Other Languages / [简体中文](./README.zh_CN.md) / [繁體中文](./README.zh_TW.md)
-If links in this document not avaiable, please access the [homepage](.
-
+Other Languages / [简体中文](./README.zh_CN.md) / [繁體中文](./README.zh_TW.md)  
+If links in this document not avaiable, please access [README on GitHub](https://github.com/YounGoat/nodejs.osapi/blob/master/README.md) directly.
 
 This API is compatible with CEPH object storage, so the package is also named __[ceph](https://www.npmjs.com/package/ceph)__. You may install and require one of `osapi` and `ceph` at your will. For simplicity, we use `osapi` hereinafter.
 
@@ -33,23 +32,23 @@ There are two styles available, OpenStack *SWIFT* and Amazon *S3*. __osapi__ off
 const swift = require('osapi/swift');
 
 let conn = new swift.Connection({
-	endPoint   : 'http://storage.example.com/',
-	subuser    : 'userName:subUserName',
-	key        : '380289ba59473a368c593c1f1de6efb0380289ba5',
-	             // generally 40 characters 
-	tempURLKey : '380289ba59473a368c593c1f1de6efb0', 
-	             // generally 32 characters
-	container  : 'containerName',
+    endPoint   : 'http://storage.example.com/',
+    subuser    : 'userName:subUserName',
+    key        : '380289ba59473a368c593c1f1de6efb0380289ba5',
+                 // generally 40 characters 
+    tempURLKey : '380289ba59473a368c593c1f1de6efb0', 
+                 // generally 32 characters
+    container  : 'containerName',
 });
 
 conn.createObject('hello/world', 'Hello world!', (err) => {
-	// ...
+    // ...
 });
 
 conn.readObject('hello/world', (err, data) => {
-	// ...
-	data.contentType;
-	data.buffer;
+    // ...
+    data.contentType;
+    data.buffer;
 });
 ```
 
@@ -60,32 +59,32 @@ conn.readObject('hello/world', (err, data) => {
 const s3 = require('osapi/s3');
 
 let conn = new s3.Connection({
-	endPoint        : 'http://storage.example.com/',
-	accessKey       : '380289ba59473a368c59', 
-	                  // 20 characters 
-	secretAccessKey : '380289ba59473a368c593c1f1de6efb0380289ba5', 
-	                  // 40 characters
-	bucket          : 'bucketName',
+    endPoint        : 'http://storage.example.com/',
+    accessKey       : '380289ba59473a368c59', 
+                      // 20 characters 
+    secretAccessKey : '380289ba59473a368c593c1f1de6efb0380289ba5', 
+                      // 40 characters
+    bucket          : 'bucketName',
 });
 
 conn.createObject({
-	name: 'hello/world',
-	meta: { /* self defined meta info */ }
-	}, 'Hello world!', (err) => {
-	// ...
+    name: 'hello/world',
+    meta: { /* self defined meta info */ }
+    }, 'Hello world!', (err) => {
+    // ...
 });
 
 conn.readObject('hello/world', (err, data) => {
-	// ...
-	data.contentType;
-	data.buffer;
-	data.meta;
+    // ...
+    data.contentType;
+    data.buffer;
+    data.meta;
 });
 ```
 
 ##	API
 
-With each __osapi/*__ style, you should start with creating an instance of class `Connection`, read [Get Started](#get-started) for examples. To understand the design philosophy of the package, please read [Design Patterns Used in __osapi__](#docs/design.md).
+With each __osapi/*__ style, you should start with creating an instance of class `Connection`, read [Get Started](#get-started) for examples. To understand the design philosophy of the package, please read [Design Patterns Used in __osapi__](./docs/design.md).
 
 ###	adaptive
 
@@ -115,7 +114,7 @@ const swift = require('osapi/swift');
 
 Here is a summary and for details, please read API document [Class Connection in osapi/swift](./docs/swift/connection.md).
 
-*	class __swift.Connection__(object *options*)
+*	class __swift.Connection__(object *options*)
 *	Promise | void __\<conn\>.createContainer__(object | string *options* [, Function *callback* ])
 *	Promise | void __\<conn\>.createObject__(object | string *options*, *content* [, Function *callback* ])
 *	Promise | void __\<conn\>.deleteContainer__(bject | string *options* [, Function *callback* ])
