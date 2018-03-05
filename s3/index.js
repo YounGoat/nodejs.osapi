@@ -178,7 +178,8 @@ Connection.prototype._action = function(action, callback) {
 		else {
 			this.once('connected', run);
 			this.once('error', done);
-		}
+        }
+        return this;
 	};
 	return callback ? RR() : new Promise(RR);
 };

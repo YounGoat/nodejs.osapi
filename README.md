@@ -1,23 +1,33 @@
-#	osapi
-__A common Object Storage API__
+#	"osapi" or "ceph"
+__Common and CEPH Compatible Object Storage API__
 
-Languages / [简体中文](./README.zh_CN.md) / [繁體中文](./README.zh_TW.md)
+Other Languages / [简体中文](./README.zh_CN.md) / [繁體中文](./README.zh_TW.md)
+If links in this document not avaiable, please access the [homepage](.
 
-This API is compatible with CEPH object storage, so the package is also named __[ceph](https://www.npmjs.com/package/ceph)__. You may install and require one of `osapi` and `ceph` at your will.
 
-There are two styles available: OpenStack *SWIFT* and Amazon *S3*.
+This API is compatible with CEPH object storage, so the package is also named __[ceph](https://www.npmjs.com/package/ceph)__. You may install and require one of `osapi` and `ceph` at your will. For simplicity, we use `osapi` hereinafter.
+
+There are two styles available, OpenStack *SWIFT* and Amazon *S3*. __osapi__ offers a standalone sub module for each style.
 
 ##	Table Of Contents
 
 *	[Get Started](#get-started)
+	*	[Get Started In OpenStack Swift Style](#get-started-with-openstack-swift-style)
+	*	[Get Started  AWS S3 Style](#get-started-with-openstack-swift-style)
 *	[API](#api)
+*	[Documentations](./docs/index.md)
 *	[Terms](#terms)
 *	[About](#about)
 *	[References](#references)
 
+##	Links
+
+*	[CHANGE LOG](./CHANGELOG.md)
+*	[Homepage](https://github.com/YounGoat/nodejs.osapi)
+
 ##	Get Started
 
-###	OpenStack Swift Style
+###	Get Started In OpenStack Swift Style
 
 ```javascript
 const swift = require('osapi/swift');
@@ -43,7 +53,7 @@ conn.readObject('hello/world', (err, data) => {
 });
 ```
 
-###	AWS S3 Style
+###	Get Started In AWS S3 Style
 
 ```javascript
 
@@ -75,14 +85,7 @@ conn.readObject('hello/world', (err, data) => {
 
 ##	API
 
-With each __osapi/*__ style, you should start with creating an instance of class `Connection`, see [Get Started](#get-started) for examples.
-
-Generally, methods of class `Connection` are ASYNCHRONOUS:
-
-*	Parameter `callback` is optional. 
-*	If `callback` is ingored, function will return an instance of `Promise`.
-*	Otherwise, `callback` SHOULD be passed at the end of the arguments.
-*	And, in style `callback(error, data)`.
+With each __osapi/*__ style, you should start with creating an instance of class `Connection`, read [Get Started](#get-started) for examples. To understand the design philosophy of the package, please read [Design Patterns Used in __osapi__](#docs/design.md).
 
 ###	adaptive
 
@@ -104,11 +107,15 @@ osapi.getConnectionStyle(conn);
 
 ###	osapi/swift
 
+`osapi/swift` may be required as a standalone module:
+
 ```javascript
 const swift = require('osapi/swift');
 ```
 
-*	new __swift.Connection__(object *options*)
+Here is a summary and for details, please read API document [Class Connection in osapi/swift](./docs/swift/connection.md).
+
+*	class __swift.Connection__(object *options*)
 *	Promise | void __\<conn\>.createContainer__(object | string *options* [, Function *callback* ])
 *	Promise | void __\<conn\>.createObject__(object | string *options*, *content* [, Function *callback* ])
 *	Promise | void __\<conn\>.deleteContainer__(bject | string *options* [, Function *callback* ])
@@ -117,20 +124,19 @@ const swift = require('osapi/swift');
 *	Promise | void __\<conn\>.findObjects__(object *options* [, Function *callback* ])
 *	Promise | void __\<conn\>.generateTempUrl__(object | string *options* [, Function *callback* ])
 *	stream.Readable __\<conn\>.pullObject__(object | string *options* [, Function *callback* ])  
-	The return stream may emit following events:
-	-	__meta__  
-		Along with argument *meta* which contains metadata of the object. 
-	-	events which a readable stream may emit  
-		See [Class: stream.Readable](https://nodejs.org/dist/latest/docs/api/stream.html#stream_class_stream_readable) for details.
 *	Promise | void __\<conn\>.readObject__(object | string *options* [, Function *callback* ])
 
 ATTENTION: Since version 0.1.0, the entrance (main js) of __osapi__ will be a toolset compatiable with *swift* and *s3*, and will no longer refer to __osapi/swift__.
 
 ###	osapi/s3
 
+`osapi/s3` may be required as a standalone module:
+
 ```javascript
 const swift = require('osapi/s3');
 ```
+
+Here is a summary and for details, please read API document [Class Connection in osapi/s3](./docs/s3/connection.md).
 
 *	new __s3.Connection__(object *options*)
 *	Promise | void __\<conn\>.createObject__(object | string *options*, content [, Function *callback* ])
@@ -139,6 +145,8 @@ const swift = require('osapi/s3');
 *	Promise | void __\<conn\>.generateTempUrl__(object | string *options* [, Function *callback* ])
 
 ###	Customised Error
+
+To help developers understanding what happens, customised errors may be thrown.
 
 *	class __OptionAbsentError__
 *	class __RequestRefusedError__
@@ -166,7 +174,7 @@ Amazon Simple Storage Service (S3) and OpenStack Swift are similiar but still tw
 
 ##	About
 
-For convenience, this package has following names (alias):
+For convenience, this package is published in following names (alias):
 *	[ceph](https://www.npmjs.com/package/ceph)
 *	[osapi](https://www.npmjs.com/package/osapi)
 

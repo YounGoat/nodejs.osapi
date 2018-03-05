@@ -37,6 +37,7 @@ const MODULE_REQUIRE = 1
 	, htp = require('htp')
 	, if2 = require('if2')
 	, noda = require('noda')
+	, overload2 = require('overload2')
 	, SimpleAgent = require('htp/SimpleAgent')
 	
 	// Jin-nang tools.
@@ -53,6 +54,8 @@ const MODULE_REQUIRE = 1
 	, OptionsAbsentError = noda.inRequire('class/OptionAbsentError')
 
 	/* in-file */
+	, TypeContent = overload2.Type.or('object', 'string', Buffer, stream.Readable)
+
 	, encodeAndAppendQuery = (urlname, options, queryNames) => {
 		urlname = urlname.split('/').map(encodeURIComponent).join('/');
 
@@ -69,17 +72,30 @@ const MODULE_REQUIRE = 1
 	
 	// Retrieve object meta information from response.
 	, parseObjectMeta = (response) => {
+		let meta;
+		
 		let def = {
 			caseSensitive: false,
 			keepNameCase: true,
 			explicit: true,
 			columns: [
 				'contentType alias(content-type)',
-				'contentLength alias(content-length)',
+				{ name: 'contentLength', alias: 'content-length', parser: parseInt },
 				{ name: 'lastModified', alias: 'last-modified', parser: t => new Date(t) },
 			],
 		};
-		return parseOptions(response.headers, def);
+		meta = parseOptions(response.headers, def);
+		
+		let submeta = {}, found = false, metaPrefix = 'x-object-meta-';
+		for (let name in response.headers) {
+			if (name.toLowerCase().startsWith(metaPrefix)) {
+				found = true;
+				submeta[name.slice(metaPrefix.length)] = response.headers[name];
+			}
+		}
+		if (found) meta.meta = submeta;
+		
+		return meta;
 	}
 
 	, encodeName = (name) => encodeURIComponent(name)
@@ -226,6 +242,7 @@ Connection.prototype._action = function(action, callback) {
 			this.once('connected', run);
 			this.once('error', done);
 		}
+		return this;
 	};
 	return callback ? RR() : new Promise(RR);
 };
@@ -292,28 +309,46 @@ Connection.prototype.createContainer = function(options, callback) {
 /**
  * Put an object to remote storage.
  * @param  {Object}           options
- * @param  {string}           options            regard as the name(key) of object to be stored
- * @param  {string}           options.name       name(key) of object to be stored
- * @param  {string}          [options.container] container/bucket to place the object, 
- *                                               by default current container of the connection will be used
- * @param  {string}           content            object content text
- * @param  {stream.Readable}  content            object content stream
- * @param  {Buffer}           content            object content buffer
- * @param  {Function}        [callback]          function(err, data)
+ * @param  {string}           options               regard as the name(key) of object to be stored
+ * @param  {string}           options.name          name(key) of object to be stored
+ * @param  {Object}          [options.meta]         meta data of object to be stored
+ * @param  {string}          [options.contentType]
+ * @param  {string}          [options.container]    container/bucket to place the object, 
+ *                                                  by default current container of the connection will be used
+ * @param  {string}          [content]              object content text
+ * @param  {stream.Readable} [content]              object content stream
+ * @param  {Buffer}          [content]              object content buffer
+ * @param  {Function}        [callback]             function(err, data)
  */
 Connection.prototype.createObject = function(options, content, callback) {
 	// ---------------------------
-	// Uniform arguments.
+	// Analyse and uniform arguments.
 
-	if (typeof options == 'string') {
-		options = { name: options };
+	let args = new overload2.ParamList(
+		/* options */
+		overload2.Type.or('object', 'string'),
+
+		/* content */
+		[ TypeContent, 'NULL', 'UNDEFINED', overload2.absent('') ],
+
+		/* callback */
+		[ Function, 'ABSENT' ]
+	).parse(arguments);
+	
+	if (!args) {
+		throw new Error('invalid arguments');
 	}
 	else {
-		options = Object.assign({}, options);
+		[ options, content, callback ] = args;
+
+		options = (typeof options == 'string')
+			? { name: options }
+			: Object.assign({}, options)
+			;
+
+		// Use property of current connection as default.
+		setIfHasNot(options, 'container', this.container);
 	}
-	
-	// Use property of current connection as default.
-	setIfHasNot(options, 'container', this.container);
 
 	return this._action((done) => {
 		let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`);
@@ -325,6 +360,12 @@ Connection.prototype.createObject = function(options, content, callback) {
 				'content-type alias(contentType)',
 			]
 		});
+
+		if (options.meta) {
+			for (let name in options.meta) {
+				headers[`X-Object-Meta-${name}`] = options.meta[name];
+			}
+		}
 
 		this.agent.put(urlname, headers, content, (err, response) => {
 			err = err || this._parseResponseError('OBJECT_CREATE', { name: options.name }, [ 201 ], response);
@@ -579,9 +620,10 @@ Connection.prototype.isConnected = function() {
 /**
  * Retrieve an object from remote storage.
  * @param  {Object}           options
- * @param  {string}           options              regard as options.name
- * @param  {string}          [options.container]   container name
- * @param  {string}          [options.name]        name(key) of object
+ * @param  {string}           options                 regard as options.name
+ * @param  {string}          [options.container]      container name
+ * @param  {string}          [options.name]           name(key) of object
+ * @param  {string}          [options.onlyMeta=false] 
  * @param  {Function}        [callback]
  */
 Connection.prototype.readObject = function(options, callback) {
@@ -602,20 +644,28 @@ Connection.prototype.readObject = function(options, callback) {
 	
 	return this._action((done) => {
 		let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`, options, []);
-		this.agent.get(urlname, (err, response) => {
+		let method = options.onlyMeta ? 'head' : 'get';
+		this.agent[method](urlname, (err, response) => {
 			err = err || this._parseResponseError(
 				'OBJECT_GET', 
 				cloneObject(options, [ 'name' ]),
 				[ 200 ],
 				response
 			);
-			let data = err ? null : Object.assign(
-				parseObjectMeta(response), 
-				{ buffer: response.bodyBuffer }
-			);
+			let data = null;
+			if (!err) {
+				data = parseObjectMeta(response);
+				if (!options.onlyMeta) data.buffer = response.bodyBuffer;
+			}
 			done(err, data);
 		});
 	}, callback);
+};
+
+Connection.prototype.readObjectMeta = function(options, callback) {
+	options = (typeof options == 'string') ? { name: options } : Object.assign({}, options);
+	options.onlyMeta = true;
+	return this.readObject(options, callback);	
 };
 
 /**
