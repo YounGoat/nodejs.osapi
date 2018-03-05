@@ -2,11 +2,13 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
-##	[0.5.0] - Mar 6th, 2018, RISKY
+##	[0.5.1] - Mar 6th, 2018, RISKY
 
 *	README greatly re-constructed.
 *	`(new swift.Connection).createObject()` accepts customised meta data.
 *	`(new swift.Connection).createObject()` validates arguments and may throw error with message "invalid arguments".
+
+##	[0.5.0@unpublished]
 
 ##	[0.4.2] - Feb 8th, 2018
 
