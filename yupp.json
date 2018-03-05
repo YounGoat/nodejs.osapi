@@ -1,4 +1,8 @@
 {
     "name": "ceph",
-    "alias": "osapi"
+    "alias": "osapi",
+    "badges": [
+		"npm.*",
+		"github.star"
+	]
 }

@@ -1,6 +1,11 @@
 #	"osapi" or "ceph"
 __Common and CEPH Compatible Object Storage API__
 
+[![total downloads of ceph](https://img.shields.io/npm/dt/ceph.svg)](https://www.npmjs.com/package/ceph)
+[![ceph's License](https://img.shields.io/npm/l/ceph.svg)](https://www.npmjs.com/package/ceph)
+[![latest version of ceph](https://img.shields.io/npm/v/ceph.svg)](https://www.npmjs.com/package/ceph)
+[![star github.com/YounGoat/nodejs.osapi](https://img.shields.io/github/stars/YounGoat/nodejs.osapi.svg?style=social&label=Star)](https://github.com/YounGoat/nodejs.osapi/stargazers)
+
 >	Other Languages / [简体中文](./README.zh_CN.md) / [繁體中文](./README.zh_TW.md)  
 >	If links in this document not avaiable, please access [README on GitHub](https://github.com/YounGoat/nodejs.osapi/blob/master/README.md) directly.
 
