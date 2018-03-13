@@ -138,7 +138,7 @@ ATTENTION: Since version 0.1.0, the entrance (main js) of __osapi__ will be a to
 const swift = require('osapi/s3');
 ```
 
-Here is a summary and for details, please read API document [Class Connection in osapi/s3](./docs/s3/connection.md).
+Here is a summary and for details, please read API document [osapi/s3](./docs/s3/index.md).
 
 *	new __s3.Connection__(object *options*)
 *	Promise | void __\<conn\>.createObject__(object | string *options*, content [, Function *callback* ])

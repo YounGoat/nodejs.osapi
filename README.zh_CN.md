@@ -5,7 +5,7 @@ __通用对象存储应用程序接口__
 [![osapi's License](https://img.shields.io/npm/l/osapi.svg)](https://www.npmjs.com/package/osapi)
 [![latest version of osapi](https://img.shields.io/npm/v/osapi.svg)](https://www.npmjs.com/package/osapi)
 
-其他语言 / [English](./README.md) / [繁體中文](./README.zh_TW.md)
+>	其他语言 / [English](./README.md) / [繁體中文](./README.zh_TW.md)
 
 这套 API 很好地兼容了 CEPH 对象存储服务，因此取 __[ceph](https://www.npmjs.com/package/ceph)__ 作为本包的别名。你可以按照个人喜好，引用 `osapi` 或 `ceph` 包，两个 NPM 包将保持同步更新。
 
