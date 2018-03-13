@@ -100,9 +100,13 @@ osapi.getConnectionStyle(conn);
 
 ###	osapi/swift
 
+`osapi/swift` 可以作为独立模块引用：
+
 ```javascript
 const swift = require('osapi/swift');
 ```
+
+相关细节和最新版本，请阅读该子模块的[详细文档](./docs/swift/index.md)。此处仅提供不甚完整的摘要：
 
 *	new __swift.Connection__(*object* options)
 *	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
@@ -120,9 +124,13 @@ const swift = require('osapi/swift');
 
 ###	osapi/s3
 
+`osapi/s3` 可以作为独立模块引用：
+
 ```javascript
 const swift = require('osapi/s3');
 ```
+
+相关细节和最新版本，请阅读该子模块的[详细文档](./docs/s3/index.md)。此处仅提供不甚完整的摘要：
 
 *	new __s3.Connection__(*object* options)
 *	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])

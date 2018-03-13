@@ -112,7 +112,7 @@ osapi.getConnectionStyle(conn);
 const swift = require('osapi/swift');
 ```
 
-Here is a summary and for details, please read API document [Class Connection in osapi/swift](./docs/swift/connection.md).
+Here is a summary and for details, please read API document [osapi/swift](./docs/swift/index.md).
 
 *	class __swift.Connection__(object *options*)
 *	Promise | void __\<conn\>.createContainer__(object | string *options* [, Function *callback* ])
@@ -124,6 +124,7 @@ Here is a summary and for details, please read API document [Class Connection in
 *	Promise | void __\<conn\>.generateTempUrl__(object | string *options* [, Function *callback* ])
 *	stream.Readable __\<conn\>.pullObject__(object | string *options* [, Function *callback* ])  
 *	Promise | void __\<conn\>.readObject__(object | string *options* [, Function *callback* ])
+*   boolean __swift.isNotFoundError__(Error *ex*)
 
 ATTENTION: Since version 0.1.0, the entrance (main js) of __osapi__ will be a toolset compatiable with *swift* and *s3*, and will no longer refer to __osapi/swift__.
 

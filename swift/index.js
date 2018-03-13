@@ -730,6 +730,11 @@ Connection.prototype.pullObject = function(options, callback) {
 	return output;
 };
 
+function isNotFoundError(ex) {
+	return ex instanceof RequestRefusedError && ex.response.statusCode == 404;
+}
+
 module.exports = {
-	Connection
+	Connection,
+	isNotFoundError,
 };
