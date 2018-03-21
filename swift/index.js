@@ -44,6 +44,7 @@ const MODULE_REQUIRE = 1
 	, cloneObject = require('jinang/cloneObject')
 	, modifyUrl = require('jinang/modifyUrl')
 	, parseOptions = require('jinang/parseOptions')
+	, PoC = require('jinang/PoC')
 		
 	/* in-package */
 	, Receiver = noda.inRequire('lib/Receiver')
@@ -145,11 +146,12 @@ const Connection = function(options) {
 	if (!subuser) {
 		throw new OptionsAbsentError('subuser', ['username,', 'subusername']);
 	}
+	this.subuser = subuser;
 	[ this.username, this.subUsername ] = subuser.split(':');
 
 	// key
-	var key = options.key;
-	if (!key) {
+	this.key = options.key;
+	if (!this.key) {
 		throw new OptionsAbsentError('key');
 	}
 
@@ -159,56 +161,10 @@ const Connection = function(options) {
 		throw new OptionsAbsentError('endPoint');
 	}
 	
-	// ---------------------------
-	// Authentication.
-	// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
-
 	if (1) {
-		let authurl = modifyUrl.pathname(this.endPoint, '/auth/1.0');
-		
-		let headers = {
-			'X-Auth-User' : subuser,
-			'X-Auth-Key'  : key,
-		};
-		htp.get(authurl, headers, (err, res) => {
-			err = err || this._parseResponseError('AUTH', null, [ 204 ], res);
-			if (err) return this.emit('error', err), undefined;
-
-			// Optional.
-			this.authToken = res.headers['x-auth-token'];
-	
-			// The URL and {api version}/{account} path for the user.
-			// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
-			this.storageUrl = res.headers['x-storage-url'];
-
-			// The authorization token for the X-Auth-User specified in the request.
-			// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
-			this.storageToken = res.headers['x-storage-token'];
-
-			let agentOptions = {
-				endPoint: this.storageUrl,
-
-				// Query "format" is prior to header "Accept".
-				// query: 'format=json',
-
-				headers: { 
-					'X-Auth-Token': this.storageToken,
-
-					// Header "Accept" is inferior to query "format".
-					'Accept': 'application/json',
-				}
-			};
-
-			let pipingAgentOptions = Object.assign({}, agentOptions, 
-				{ settings: { piping : true, pipingOnly : true } });
-
-			this.agent = new SimpleAgent(agentOptions);
-			this.pipingAgent = new SimpleAgent(pipingAgentOptions);
-
-			this.emit('connected');
-		});
+		this.connect();
 	}
-
+	
 	this.setMaxListeners(100000);
 };
 
@@ -270,6 +226,61 @@ Connection.prototype._parseResponseError = function(action, meta, expect, respon
 		return err;
 	}
 };
+
+Connection.prototype.connect = function(callback) { return PoC(done => {
+	// ---------------------------
+	// Authentication.
+	// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
+
+	let authurl = modifyUrl.pathname(this.endPoint, '/auth/1.0');
+	
+	let headers = {
+		'X-Auth-User' : this.subuser,
+		'X-Auth-Key'  : this.key,
+	};
+	htp.get(authurl, headers, (err, res) => {
+		err = err || this._parseResponseError('AUTH', null, [ 204 ], res);
+		if (err) {
+			this.emit('error', err);
+			done(err);
+			return;
+		}
+
+		// Optional.
+		this.authToken = res.headers['x-auth-token'];
+
+		// The URL and {api version}/{account} path for the user.
+		// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
+		this.storageUrl = res.headers['x-storage-url'];
+
+		// The authorization token for the X-Auth-User specified in the request.
+		// @see http://docs.ceph.com/docs/master/radosgw/swift/auth/
+		this.storageToken = res.headers['x-storage-token'];
+
+		let agentOptions = {
+			endPoint: this.storageUrl,
+
+			// Query "format" is prior to header "Accept".
+			// query: 'format=json',
+
+			headers: { 
+				'X-Auth-Token': this.storageToken,
+
+				// Header "Accept" is inferior to query "format".
+				'Accept': 'application/json',
+			}
+		};
+
+		let pipingAgentOptions = Object.assign({}, agentOptions, 
+			{ settings: { piping : true, pipingOnly : true } });
+
+		this.agent = new SimpleAgent(agentOptions);
+		this.pipingAgent = new SimpleAgent(pipingAgentOptions);
+
+		this.emit('connected');
+		done(null);
+	});	
+}, callback); };
 
 /**
  * Create new container(bucket) on remote storage.

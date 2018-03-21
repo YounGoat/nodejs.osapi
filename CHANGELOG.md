@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.6.0] - Mar 21st, 2018 - RISKY
+
+*	`(new swift.Connection).connect()` added.
+
 ##	[0.5.2] - Mar 13th, 2018
 
 *	`swift.isNotFoundError()` added.

@@ -27,6 +27,10 @@ let conn = new swift.Connection({
 });
 ```
 
+##	connect()
+
+*	
+
 ##	createContainer()
 
 *	Promise __\<conn\>.createContainer__( string *containerName* )
