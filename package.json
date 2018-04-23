@@ -14,10 +14,10 @@
     "license": "ISC",
     "bin": {},
     "dependencies": {
-        "htp": "^0.6.2",
+        "htp": "^0.7.1",
         "if2": "^0.2.0",
-        "jinang": "^0.14.0",
-        "noda": "^0.3.0",
+        "jinang": "^0.21.0",
+        "noda": "^0.4.0",
         "overload2": "^0.3.1"
     },
     "devDependencies": {},
