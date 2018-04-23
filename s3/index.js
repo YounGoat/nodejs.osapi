@@ -350,9 +350,11 @@ Connection.prototype.findBuckets = function(options, callback) {
 
 Connection.prototype.get = function(name) {
     switch (name.toLowerCase()) {
-        case 'style'       : return 's3';
-		case 'endpoint'    : return this.endPoint;
-		case 'bucket'      : return this.bucket;
+        case 'style'           : return 's3';
+		case 'endpoint'        : return this.endPoint;
+        case 'bucket'          : return this.bucket;
+        case 'accesskey'       : return this.accessKey;
+        case 'secretaccesskey' : return this.secretAccessKey; 
 	}
 };
 
@@ -406,6 +408,13 @@ Connection.prototype.readObject = function(options, callback) {
 			done(err, data);
         });
     }, callback);
+};
+
+Connection.prototype.toString = function() {
+    let data = {};
+	[ 'style', 'endpoint', 'bucket', 'accesskey', 'secretaccesskey' ]
+		.forEach(name => data[name] = this.get(name));
+	return JSON.stringify(data);
 };
 
 module.exports = {

@@ -10,7 +10,7 @@ const MODULE_REQUIRE = 1
 	;
 
 function RequestRefusedError(action, meta, response) {
-	this.message = `Failed on requesting remote storage`;
+	this.message = `ceph.RequestRefused: ${response.statusMessage}`;
 	this.action = action;
 	this.meta = meta;
 	this.response = response;

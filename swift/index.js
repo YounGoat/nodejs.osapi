@@ -42,6 +42,7 @@ const MODULE_REQUIRE = 1
 	
 	// Jin-nang tools.
 	, cloneObject = require('jinang/cloneObject')
+	, forInObject = require('jinang/forInObject')
 	, modifyUrl = require('jinang/modifyUrl')
 	, parseOptions = require('jinang/parseOptions')
 	, PoC = require('jinang/PoC')
@@ -96,6 +97,36 @@ const MODULE_REQUIRE = 1
 		}
 		if (found) meta.meta = submeta;
 		
+		return meta;
+	}
+	
+	, parseContainerMeta = (response) => {
+		let meta;
+		
+		let def = {
+			caseSensitive: false,
+			keepNameCase: true,
+			explicit: true,
+			columns: [
+				// 'contentType alias(content-type)',
+				// { name: 'contentLength', alias: 'content-length', parser: parseInt },
+				// { name: 'lastModified', alias: 'last-modified', parser: t => new Date(t) },
+			],
+		};
+		meta = parseOptions(response.headers, def);
+		
+		let submeta = {}, found = false, metaPrefix = 'x-container-', customMetaPrefix = 'x-container-meta-';
+		forInObject(response.headers, (key, value) => {
+			let key_lc = key.toLowerCase();
+			if (key_lc.startsWith(customMetaPrefix)) {
+				submeta[key.slice(customMetaPrefix.length)] = value;
+				found = true;
+			}
+			else if (key_lc.startsWith(metaPrefix)) {
+				meta[key.slice(metaPrefix.length)] = value;
+			}
+		});
+		if (found) meta.meta = submeta;
 		return meta;
 	}
 
@@ -287,6 +318,7 @@ Connection.prototype.connect = function(callback) { return PoC(done => {
  * @param  {Object}           options
  * @param  {string}           options            regard as the name(key) of object to be stored
  * @param  {string}           options.name       name(key) of object to be stored
+ * @param  {Object}          [options.meta]      meta data of object to be stored
  * @param  {Function}        [callback]          function(err, data)
  */
 Connection.prototype.createContainer = function(options, callback) {
@@ -302,7 +334,10 @@ Connection.prototype.createContainer = function(options, callback) {
 
 	return this._action((done) => {
 		let urlname = encodeAndAppendQuery(options.name);
-		this.agent.put(urlname, '', (err, response) => {
+		let headers = cloneObject(options.meta, (name, value) => [ `X-Container-Meta-${name}`, value ]);
+		let body = '';
+
+		this.agent.put(urlname, headers, body, (err, response) => {
 			err = err || this._parseResponseError(
 				'CONTAINER_CREATE', 
 				cloneObject(options, ['name']),
@@ -466,7 +501,7 @@ Connection.prototype.deleteObject = function(options, callback) {
  * @param  {Function} [callback]
  */
 Connection.prototype.findContainers = function(options, callback) {
-	// ---------------------------
+// ---------------------------
 	// Uniform arguments.
 
 	if (typeof arguments[0] == 'function') {
@@ -637,6 +672,44 @@ Connection.prototype.isConnected = function() {
  * @param  {string}          [options.onlyMeta=false] 
  * @param  {Function}        [callback]
  */
+Connection.prototype.readContainer = function(options, callback) {
+	// ---------------------------
+	// Uniform arguments.
+	
+	if (typeof options == 'string') {
+		options = { name: options };
+	}
+	else {
+		options = Object.assign({}, options);
+	}
+	
+	return this._action((done) => {
+		let urlname = encodeAndAppendQuery(`${options.name}`, options, []);
+		this.agent.head(urlname, (err, response) => {
+			err = err || this._parseResponseError(
+				'CONTAINER_GET', 
+				cloneObject(options, [ 'name' ]),
+				[ 204 ],
+				response
+			);
+			let data = null;
+			if (!err) {
+				data = parseContainerMeta(response);
+			}
+			done(err, data);
+		});
+	}, callback);
+};
+
+/**
+ * Retrieve an object from remote storage.
+ * @param  {Object}           options
+ * @param  {string}           options                 regard as options.name
+ * @param  {string}          [options.container]      container name
+ * @param  {string}          [options.name]           name(key) of object
+ * @param  {string}          [options.onlyMeta=false] 
+ * @param  {Function}        [callback]
+ */
 Connection.prototype.readObject = function(options, callback) {
 	// ---------------------------
 	// Uniform arguments.
@@ -739,6 +812,13 @@ Connection.prototype.pullObject = function(options, callback) {
 			;
 	}, onCall);
 	return output;
+};
+
+Connection.prototype.toString = function() {
+	let data = {};
+	[ 'style', 'subuser', 'endpoint', 'container', 'key', 'tempurlkey' ]
+		.forEach(name => data[name] = this.get(name));
+	return JSON.stringify(data);
 };
 
 function isNotFoundError(ex) {

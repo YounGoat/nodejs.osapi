@@ -2,6 +2,11 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.7.0] - Apr 23rd, 2018
+
+*	`(new swift.Connection).toString()` added.
+*	`(new s3.Connection).toString()` added.
+
 ##	[0.6.0] - Mar 21st, 2018 - RISKY
 
 *	`(new swift.Connection).connect()` added.
