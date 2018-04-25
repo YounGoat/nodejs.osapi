@@ -622,7 +622,7 @@ Connection.prototype.generateTempUrl = function(options, callback) {
 	setIfHasNot(options, 'ttl', 86400);
 	
 	return this._action((done) => {
-		let urlname = encodeAndAppendQuery(`${this.storageUrl}/${options.container}/${options.name}`);
+		let urlname = this.storageUrl + '/' + options.container + '/' + encodeAndAppendQuery(options.name);
 		let temp_url_expires = parseInt(Date.now() / 1000) + options.ttl;
 		let temp_url_sig;
 	

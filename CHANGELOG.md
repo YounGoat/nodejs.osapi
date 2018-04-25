@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.7.1] - Apr 25th, 2018
+
+*	Fixed bug in `(new swift.Connection).generateTempURL()` that protocal is encoded to 'http%3A'. 
+
 ##	[0.7.0] - Apr 23rd, 2018
 
 *	`(new swift.Connection).toString()` added.
