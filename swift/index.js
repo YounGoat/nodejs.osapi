@@ -36,6 +36,7 @@ const MODULE_REQUIRE = 1
 	/* NPM */
 	, htp = require('htp')
 	, if2 = require('if2')
+	, mifo = require('mifo')
 	, noda = require('noda')
 	, overload2 = require('overload2')
 	, SimpleAgent = require('htp/SimpleAgent')
@@ -56,6 +57,8 @@ const MODULE_REQUIRE = 1
 	, OptionsAbsentError = noda.inRequire('class/OptionAbsentError')
 
 	/* in-file */
+	, reASCII = /^[\x00-\xFF]*$/
+
 	, TypeContent = overload2.Type.or('object', 'string', Buffer, stream.Readable)
 
 	, encodeAndAppendQuery = (urlname, options, queryNames) => {
@@ -93,7 +96,13 @@ const MODULE_REQUIRE = 1
 		for (let name in response.headers) {
 			if (name.toLowerCase().startsWith(metaPrefix)) {
 				found = true;
-				submeta[name.slice(metaPrefix.length)] = response.headers[name];
+				let value = response.headers[name];
+
+				// ATTENTION: Because metadata is transferred via HTTP header, only ASCII characters are valid. We have
+				// to encode the non-ASCII character before transferring. So, metadata stored in CEPH storage also may
+				// be those encoded. On reading back, we will try decoding the metadata before returning them to you.
+				// @tag 20180605.a
+				submeta[name.slice(metaPrefix.length)] = if2.string(mifo.base64.decode(value), value);
 			}
 		}
 		if (found) meta.meta = submeta;
@@ -120,8 +129,9 @@ const MODULE_REQUIRE = 1
 		forInObject(response.headers, (key, value) => {
 			let key_lc = key.toLowerCase();
 			if (key_lc.startsWith(customMetaPrefix)) {
-				submeta[key.slice(customMetaPrefix.length)] = value;
 				found = true;
+				// @tag 20180605.a
+				submeta[key.slice(customMetaPrefix.length)] = if2.string(mifo.base64.decode(value), value);
 			}
 			else if (key_lc.startsWith(metaPrefix)) {
 				meta[key.slice(metaPrefix.length)] = value;
@@ -388,7 +398,7 @@ Connection.prototype.createContainer = function(options, callback) {
 
 	return this._action((done) => {
 		let urlname = encodeAndAppendQuery(options.name);
-		let headers = cloneObject(options.meta, (name, value) => [ `X-Container-Meta-${name}`, value ]);
+		let headers = cloneObject(options.meta, (name, value) => [ `X-Container-Meta-${name}`, reASCII.test(value) ? value : mifo.base64.encode(value) ]);
 		let body = '';
 
 		this.agent.put(urlname, headers, body, (err, response) => {
@@ -463,7 +473,10 @@ Connection.prototype.createObject = function(options, content, callback) {
 
 		if (options.meta) {
 			for (let name in options.meta) {
-				headers[`X-Object-Meta-${name}`] = options.meta[name];
+				// @tag 20180605.a
+				let value = options.meta[name];
+				if (!reASCII.test(value)) value = mifo.base64.encode(value);
+				headers[`X-Object-Meta-${name}`] = value;
 			}
 		}
 

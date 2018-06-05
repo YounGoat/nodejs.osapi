@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.8.1] - June 5th, 2018 - DISPUTABLE
+
+*	Non-ASCII metadata will be encoded via [mifo.base64](https://www.npmjs.com/package/mifo) on creating and automatically decoded on reading.
+
 ##	[0.8.0] - June 5th, 2018 - RISKY
 
 *	`(new swift.Connection).createObjectMeta()` added.
