@@ -543,7 +543,7 @@ Connection.prototype.createObjectMeta = function(options, meta, metaFlag, callba
 			options = { name: options };
 		}
 		options = Object.assign({ meta, metaFlag }, options);
-		return this.this.createObject(options, callback);
+		return this.createObject(options, callback);
 	}
 };
 
