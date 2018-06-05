@@ -421,6 +421,7 @@ Connection.prototype.createContainer = function(options, callback) {
  * @param  {Object}           options
  * @param  {string}           options                 regard as the name(key) of object to be stored
  * @param  {string}           options.name            name(key) of object to be stored
+ * @param  {string}          [options.contentType]    
  * @param  {Object}          [options.meta]           meta data of object to be stored
  * @param  {string}          [options.metaFlag]       if set, only update meta data without replacing object content
  * @param  {string}          [options.container]      container/bucket to place the object, 
@@ -444,12 +445,14 @@ Connection.prototype.createObject = function(options, content, callback) {
 		/* callback */
 		[ Function, 'ABSENT' ]
 	).parse(arguments);
-	
+
 	if (!args) {
 		throw new Error('invalid arguments');
 	}
 	else {
 		[ options, content, callback ] = args;
+
+		if (typeof content == 'undefined' || content == null) content = '';
 
 		if (typeof options == 'string') {
 			options = { name: options };
