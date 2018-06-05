@@ -82,6 +82,7 @@ const MODULE_REQUIRE = 1
 			explicit: true,
 			columns: [
 				'contentType alias(content-type)',
+				'etag',
 				{ name: 'contentLength', alias: 'content-length', parser: parseInt },
 				{ name: 'lastModified', alias: 'last-modified', parser: t => new Date(t) },
 			],
@@ -383,9 +384,7 @@ Connection.prototype.createContainer = function(options, callback) {
 	if (typeof options == 'string') {
 		options = { name: options };
 	}
-	else {
-		options = Object.assign({}, options);
-	}
+	options = Object.assign({}, options);
 
 	return this._action((done) => {
 		let urlname = encodeAndAppendQuery(options.name);
@@ -410,16 +409,16 @@ Connection.prototype.createContainer = function(options, callback) {
 /**
  * Put an object to remote storage.
  * @param  {Object}           options
- * @param  {string}           options               regard as the name(key) of object to be stored
- * @param  {string}           options.name          name(key) of object to be stored
- * @param  {Object}          [options.meta]         meta data of object to be stored
- * @param  {string}          [options.contentType]
- * @param  {string}          [options.container]    container/bucket to place the object, 
- *                                                  by default current container of the connection will be used
- * @param  {string}          [content]              object content text
- * @param  {stream.Readable} [content]              object content stream
- * @param  {Buffer}          [content]              object content buffer
- * @param  {Function}        [callback]             function(err, data)
+ * @param  {string}           options                 regard as the name(key) of object to be stored
+ * @param  {string}           options.name            name(key) of object to be stored
+ * @param  {Object}          [options.meta]           meta data of object to be stored
+ * @param  {string}          [options.metaFlag]       if set, only update meta data without replacing object content
+ * @param  {string}          [options.container]      container/bucket to place the object, 
+ *                                                    by default current container of the connection will be used
+ * @param  {string}          [content]                object content text
+ * @param  {stream.Readable} [content]                object content stream
+ * @param  {Buffer}          [content]                object content buffer
+ * @param  {Function}        [callback]               function(err, data)
  */
 Connection.prototype.createObject = function(options, content, callback) {
 	// ---------------------------
@@ -442,13 +441,13 @@ Connection.prototype.createObject = function(options, content, callback) {
 	else {
 		[ options, content, callback ] = args;
 
-		options = (typeof options == 'string')
-			? { name: options }
-			: Object.assign({}, options)
-			;
-
-		// Use property of current connection as default.
-		setIfHasNot(options, 'container', this.container);
+		if (typeof options == 'string') {
+			options = { name: options };
+		}
+		options = Object.assign({
+			// Use property of current connection as default.		
+			container: this.container,
+		}, options);
 	}
 
 	return this._action((done) => {
@@ -468,8 +467,28 @@ Connection.prototype.createObject = function(options, content, callback) {
 			}
 		}
 
-		this.agent.put(urlname, headers, content, (err, response) => {
-			err = err || this._parseResponseError('OBJECT_CREATE', { name: options.name }, [ 201 ], response);
+		// By default, use method PUT to create(upload) a new object.
+		let method = 'put';
+
+		// To rewrite metadata of an existing object.
+		// The old metadata will be deleted.
+		if (options.metaFlag == 'w') {
+			method = 'post';
+		}
+
+		// To append metadata of an existing object.
+		else if (options.metaFlag == 'a') {
+			method = 'copy';
+			headers['Destination'] = `${options.container}/${options.name}`;
+		}
+
+		this.agent[method](urlname, headers, content, (err, response) => {
+			err = err || this._parseResponseError('OBJECT_CREATE', { name: options.name }, 
+				[ 
+					201, // Created, PUT
+					202, // Accept, POST
+				],
+				response);
 			if (err) {
 				done(err, null);
 			}
@@ -481,6 +500,38 @@ Connection.prototype.createObject = function(options, content, callback) {
 			}
 		});
 	}, callback);
+};
+
+/**
+ * Update the meta data of an object.
+ */
+Connection.prototype.createObjectMeta = function(options, meta, metaFlag, callback) {
+	let args = new overload2.ParamList(
+		/* options */
+		overload2.Type.or('object', 'string'),
+
+		/* meta */
+		'object NULL ABSENT',
+		
+		/* metaFlag */
+		[ overload2.enum('a', 'w'), overload2.absent('w') ],
+
+		/* callback */
+		[ Function, 'ABSENT' ]
+	).parse(arguments);
+
+	if (!args) {
+		throw new Error('invalid arguments');
+	}
+	else {
+		[ options, meta, metaFlag, callback ] = args;
+
+		if (typeof options == 'string') {
+			options = { name: options };
+		}
+		options = Object.assign({ meta, metaFlag }, options);
+		return this.this.createObject(options, callback);
+	}
 };
 
 /**
@@ -496,9 +547,7 @@ Connection.prototype.deleteContainer = function(options, callback) {
 	if (typeof options == 'string') {
 		options = { name: options };
 	}
-	else {
-		options = Object.assign({}, options);
-	}
+	options = Object.assign({}, options);
 	
 	return this._action((done) => {
 		let urlname = encodeAndAppendQuery(`${options.name}`);
@@ -528,12 +577,10 @@ Connection.prototype.deleteObject = function(options, callback) {
 	if (typeof options == 'string') {
 		options = { name: options };
 	}
-	else {
-		options = Object.assign({}, options);
-	}
-	
-	// Use property of current connection as default.
-	setIfHasNot(options, 'container', this.container);
+	options = Object.assign({
+		// Use property of current connection as default.
+		container: this.container,
+	}, options);
 	
 	return this._action((done) => {
 		let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`);
@@ -625,12 +672,10 @@ Connection.prototype.findObjects = function(options, callback) {
 	if (typeof options == 'string') {
 		options = { prefix: options };
 	}
-	else {
-		options = Object.assign({}, options);
-	}
-
-	// Use property of current connection as default.
-	setIfHasNot(options, 'container', this.container);
+	options = Object.assign({
+		// Use property of current connection as default.
+		container: this.container,
+	}, options);
 	
 	return this._action((done) => {
 		let urlname = encodeAndAppendQuery(`${options.container}`, options, [ 'delimiter', 'limit', 'path', 'prefix', 'marker' ]);
@@ -666,16 +711,13 @@ Connection.prototype.generateTempUrl = function(options, callback) {
 	if (typeof options == 'string') {
 		options = { name: options };
 	}
-	else {
-		options = Object.assign({}, options);
-	}
+	options = Object.assign({	
+		// Use property of current connection as default.
+		container: this.container,		
+		// Default ttl is 24 hours.
+		ttl: 86400,
+	}, options);
 
-	// Use property of current connection as default.
-	setIfHasNot(options, 'container', this.container);
-
-	// Default ttl is 24 hours.
-	setIfHasNot(options, 'ttl', 86400);
-	
 	return this._action((done) => {
 		let urlname = this.storageUrl + '/' + options.container + '/' + encodeAndAppendQuery(options.name);
 		let temp_url_expires = parseInt(Date.now() / 1000) + options.ttl;
@@ -776,15 +818,12 @@ Connection.prototype.readObject = function(options, callback) {
 		options = { name: options };
 	}
 	options = Object.assign({
+		// Use property of current connection as default.
+		container: this.container, 
 		onlyMeta: false,
 		suppressNotFoundError: false,
 	}, options);
-	
-	// Use property of current connection as default.
-	if (!options.hasOwnProperty('container')) {
-		options.container = this.container;
-	}
-	
+		
 	return this._action((done) => {
 		let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`, options, []);
 		let method = options.onlyMeta ? 'head' : 'get';
@@ -809,9 +848,11 @@ Connection.prototype.readObject = function(options, callback) {
 };
 
 Connection.prototype.readObjectMeta = function(options, callback) {
-	options = (typeof options == 'string') ? { name: options } : Object.assign({}, options);
-	options.onlyMeta = true;
-	return this.readObject(options, callback);	
+	if (typeof options == 'string') {
+		options = { name: options };
+	}
+	options = Object.assign({ onlyMeta: true }, options);
+	return this.readObject(options, callback);
 };
 
 /**
@@ -830,15 +871,11 @@ Connection.prototype.pullObject = function(options, callback) {
 	if (typeof options == 'string') {
 		options = { name: options };
 	}
-	else {
-		options = Object.assign({}, options);
-	}
+	options = Object.assign({
+		// Use property of current connection as default.
+		container: this.container,
+	}, options);	
 	
-	// Use property of current connection as default.
-	if (!options.hasOwnProperty('container')) {
-		options.container = this.container;
-	}
-
 	let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`, options, []);
 	let output = new Receiver();
 	let onCall = (err, meta) => {
@@ -882,6 +919,7 @@ Connection.prototype.toString = function() {
 		.forEach(name => data[name] = this.get(name));
 	return JSON.stringify(data);
 };
+
 
 function isNotFoundError(ex) {
 	return ex instanceof RequestRefusedError && ex.response.statusCode == 404;

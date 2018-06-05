@@ -38,13 +38,21 @@ let conn = new swift.Connection({
 *	Connection __\<conn\>.createContainer__( string *containerName*, Function *callback* )
 *	Connection __\<conn\>.createContainer__( object *options*, Function *callback* )
 
-
 ##	createObject()
 
 *	Promise __\<conn\>.createObject__( string *objectName*, *content* )
-*	Promise __\<conn\>.createObject__( object *options* )
+*	Promise __\<conn\>.createObject__( object *options*, *content* )
 *	Connection __\<conn\>.createObject__( string *objectName*, *content*, Function *callback* )
-*	Connection __\<conn\>.createObject__( object *options*, Function *callback* )
+*	Connection __\<conn\>.createObject__( object *options*, *content*, Function *callback* )
+
+##	createObjectMeta()
+
+*	Promise __\<conn\>.createObjectMeta__( string *objectName*, object *meta* [, string *flag*] )
+*	Promise __\<conn\>.createObjectMeta__( object *options*, object *meta* [, string *flag*] )
+*	Connection __\<conn\>.createObjectMeta__( string *objectName*, object *meta* [, string *flag*,] Function *callback* )
+*	Connection __\<conn\>.createObjectMeta__( object *options*, object *meta* [, string *flag*,] Function *callback* )
+
+Parameter *flag* can be `a`, means to append metadata, or `w`, means to delete existing metadata and then write. Other values will be rejected.
 
 ##	deleteContainer()
 
@@ -133,6 +141,7 @@ Object data will be returned via `callback(err, data)` or `Promise.resolve(data)
 {
 	contentType, /* string */
 	contentLength, /* number */
+	etag, /* string */
 	lastModified, /* Date */
 	meta, /* Object */
 	buffer, /* Buffer */
