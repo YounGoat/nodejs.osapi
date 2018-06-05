@@ -314,6 +314,61 @@ Connection.prototype.connect = function(callback) { return PoC(done => {
 }, callback); };
 
 /**
+ * Copy an object.
+ * @param  {Object}           source          
+ * @param  {string}           source              regard as the name(key) of object to be copied
+ * @param  {Object}          [source.container]   container/bucket where the source object located
+ * @param  {Object}          [source.name]        name(key) of object to be copied
+ * @param  {Object}           target          
+ * @param  {string}           target              regard as the name(key) of target object
+ * @param  {Object}          [target.container]   container/bucket where the target object located
+ * @param  {Object}          [target.name]        name(key) of object to be created
+ * @param  {Function}        [callback]           function(err, data)
+ */
+Connection.prototype.copyObject = function(source, target, callback) {
+	// ---------------------------
+	// Analyse and uniform arguments.
+
+	if (typeof source == 'string') {
+		source = { 
+			container: this.container,
+			name: source,
+		};
+	}
+
+	if (typeof target == 'string') {
+		target = {
+			container: source.container,
+			name: target,
+		};
+	}
+
+	if (!source.container) {
+		throw new Error('invalid arguments');
+	}
+
+	return this._action((done) => {
+		let urlname = encodeAndAppendQuery(`${source.container}/${source.name}`);
+
+		let headers = {};
+		headers['Destination'] = `${target.container}/${target.name}`;
+
+		this.agent.copy(urlname, headers, (err, response) => {
+			err = err || this._parseResponseError('OBJECT_CREATE', { name: options.name }, [ 201 ], response);
+			if (err) {
+				done(err, null);
+			}
+			else {
+				done(null, {
+					transId: response.headers['x-trans-id'],
+					etag: response.headers['etag']
+				});
+			}
+		});
+	}, callback);
+};
+
+/**
  * Create new container(bucket) on remote storage.
  * @param  {Object}           options
  * @param  {string}           options            regard as the name(key) of object to be stored
@@ -667,9 +722,8 @@ Connection.prototype.isConnected = function() {
  * Retrieve an object from remote storage.
  * @param  {Object}           options
  * @param  {string}           options                 regard as options.name
- * @param  {string}          [options.container]      container name
  * @param  {string}          [options.name]           name(key) of object
- * @param  {string}          [options.onlyMeta=false] 
+ * @param  {boolean}         [options.suppressNotFoundError=false]
  * @param  {Function}        [callback]
  */
 Connection.prototype.readContainer = function(options, callback) {
@@ -679,9 +733,9 @@ Connection.prototype.readContainer = function(options, callback) {
 	if (typeof options == 'string') {
 		options = { name: options };
 	}
-	else {
-		options = Object.assign({}, options);
-	}
+	options = Object.assign({
+		suppressNotFoundError: false,
+	}, options);
 	
 	return this._action((done) => {
 		let urlname = encodeAndAppendQuery(`${options.name}`, options, []);
@@ -696,6 +750,9 @@ Connection.prototype.readContainer = function(options, callback) {
 			if (!err) {
 				data = parseContainerMeta(response);
 			}
+			else if (isNotFoundError(err) && options.suppressNotFoundError) {
+				err = null;
+			}
 			done(err, data);
 		});
 	}, callback);
@@ -707,7 +764,8 @@ Connection.prototype.readContainer = function(options, callback) {
  * @param  {string}           options                 regard as options.name
  * @param  {string}          [options.container]      container name
  * @param  {string}          [options.name]           name(key) of object
- * @param  {string}          [options.onlyMeta=false] 
+ * @param  {boolean}         [options.onlyMeta=false] 
+ * @param  {boolean}         [options.suppressNotFoundError=false]
  * @param  {Function}        [callback]
  */
 Connection.prototype.readObject = function(options, callback) {
@@ -717,9 +775,10 @@ Connection.prototype.readObject = function(options, callback) {
 	if (typeof options == 'string') {
 		options = { name: options };
 	}
-	else {
-		options = Object.assign({}, options);
-	}
+	options = Object.assign({
+		onlyMeta: false,
+		suppressNotFoundError: false,
+	}, options);
 	
 	// Use property of current connection as default.
 	if (!options.hasOwnProperty('container')) {
@@ -740,6 +799,9 @@ Connection.prototype.readObject = function(options, callback) {
 			if (!err) {
 				data = parseObjectMeta(response);
 				if (!options.onlyMeta) data.buffer = response.bodyBuffer;
+			}
+			else if (isNotFoundError(err) && options.suppressNotFoundError) {
+				err = null;
 			}
 			done(err, data);
 		});

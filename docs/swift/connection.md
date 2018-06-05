@@ -29,7 +29,7 @@ let conn = new swift.Connection({
 
 ##	connect()
 
-*	
+*	void __\<conn\>.connect__()
 
 ##	createContainer()
 
@@ -88,9 +88,53 @@ The returned stream may emit following events:
 -	events which a readable stream may emit  
 	See [Class: stream.Readable](https://nodejs.org/dist/latest/docs/api/stream.html#stream_class_stream_readable) for details.
 
+##	readContainer()
+
+*	Promise __\<conn\>.readObject__( string *containerName* )
+*	Promise __\<conn\>.readObject__( object *options* )
+*	Connection __\<conn\>.readObject__( string *containerName*, Function *callback* )
+*	Connection __\<conn\>.readObject__( object *options*, Function *callback* )
+
+Parameter *options* may look like
+```javascript
+{
+	name, /* string */
+	
+	suppressNotFoundError, /* boolean DEFAULT false */
+	// If true, `null` will be returned when container not found.
+	// By default, an error will be thrown.
+}
+```
+
 ##	readObject()
 
 *	Promise __\<conn\>.readObject__( string *objectName* )
 *	Promise __\<conn\>.readObject__( object *options* )
 *	Connection __\<conn\>.readObject__( string *objectName*, Function *callback* )
 *	Connection __\<conn\>.readObject__( object *options*, Function *callback* )
+
+Parameter *options* may look like:
+```javascript
+{
+	container, /* string DEFAULT conn.container */
+	name, /* string */
+	
+	onlyMeta, /* boolean DEFAULT false */
+	// If true, only meta data will be returned.
+
+	suppressNotFoundError, /* boolean DEFAULT false */
+	// If true, `null` will be returned when object not found.
+	// By default, an error will be thrown.
+}
+```
+
+Object data will be returned via `callback(err, data)` or `Promise.resolve(data)` and look like:
+```javascript
+{
+	contentType, /* string */
+	contentLength, /* number */
+	lastModified, /* Date */
+	meta, /* Object */
+	buffer, /* Buffer */
+}
+```

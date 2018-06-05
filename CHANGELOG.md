@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.7.3] - June 5th, 2018
+
+*	Option `suppressNotFoundError` accepted by `(new swift.Connection).readObject()` and `(new swift.Connection).readContainer()`. 
+
 ##	[0.7.2] - May 7th, 2018
 
 *	Upgrade dependency version of *htp*.
