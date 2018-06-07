@@ -424,6 +424,7 @@ Connection.prototype.createContainer = function(options, callback) {
  * @param  {string}          [options.contentType]    
  * @param  {Object}          [options.meta]           meta data of object to be stored
  * @param  {string}          [options.metaFlag]       if set, only update meta data without replacing object content
+ * @param  {boolean}         [options.suppressNotFoundError]
  * @param  {string}          [options.container]      container/bucket to place the object, 
  *                                                    by default current container of the connection will be used
  * @param  {string}          [content]                object content text
@@ -505,15 +506,19 @@ Connection.prototype.createObject = function(options, content, callback) {
 					202, // Accept, POST
 				],
 				response);
-			if (err) {
-				done(err, null);
-			}
-			else {
-				done(null, {
+			
+			let data = null;
+			if (!err) {
+				data = {
+					lastModified: new Date(response.headers['last-modified']),
 					transId: response.headers['x-trans-id'],
 					etag: response.headers['etag']
-				});
+				};
 			}
+			else if (isNotFoundError(err) || options.suppressNotFoundError) {
+				err = null;
+			}
+			done(err, data);
 		});
 	}, callback);
 };

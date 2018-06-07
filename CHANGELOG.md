@@ -2,7 +2,12 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
-##	[0.8.1] - June 5th, 2018 - DISPUTABLE
+##	[0.8.5] - June 7th, 2018
+
+*	Option `suppressNotFoundError` accepted by `(new swift.Connection).createObject()` and `(new swift.Connection).createObjectMeta()`. 
+*	Property lastModifed which is Date instance is added to returned value of `(new swift.Connection).createObject()` method.
+
+##	[0.8.4] - June 5th, 2018 - DISPUTABLE
 
 *	Non-ASCII metadata will be encoded via [mifo.base64](https://www.npmjs.com/package/mifo) on creating and automatically decoded on reading.
 
