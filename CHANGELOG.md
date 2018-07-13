@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.8.6] - July 13th, 2018
+
+*	Fixed bug in `(new swift.Connection).createObject()` that `suppressNotFoundError` option suppresses not only `NotFoundError` but any other errors, and `NotFoundError` will never be thrown.
+
 ##	[0.8.5] - June 7th, 2018
 
 *	Option `suppressNotFoundError` accepted by `(new swift.Connection).createObject()` and `(new swift.Connection).createObjectMeta()`. 

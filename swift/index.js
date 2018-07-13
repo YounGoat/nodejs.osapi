@@ -515,7 +515,7 @@ Connection.prototype.createObject = function(options, content, callback) {
 					etag: response.headers['etag']
 				};
 			}
-			else if (isNotFoundError(err) || options.suppressNotFoundError) {
+			else if (isNotFoundError(err) && options.suppressNotFoundError) {
 				err = null;
 			}
 			done(err, data);
