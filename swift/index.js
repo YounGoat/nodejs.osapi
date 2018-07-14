@@ -65,8 +65,8 @@ const MODULE_REQUIRE = 1
 		urlname = urlname.split('/').map(encodeURIComponent).join('/');
 
 		if (options) {
-			let querys = queryNames ? cloneObject(options, queryNames) : options;
-			let query = querystring.stringify(querys);
+			let queries = queryNames ? cloneObject(options, queryNames) : options;
+			let query = querystring.stringify(queries);
 			if (query) {
 				urlname += `?${query}`;
 			}
@@ -496,7 +496,8 @@ Connection.prototype.createObject = function(options, content, callback) {
 		// To append metadata of an existing object.
 		else if (options.metaFlag == 'a') {
 			method = 'copy';
-			headers['Destination'] = `${options.container}/${options.name}`;
+			// Destination is as same as original path.
+			headers['Destination'] = urlname;
 		}
 
 		this.agent[method](urlname, headers, content, (err, response) => {
@@ -525,6 +526,11 @@ Connection.prototype.createObject = function(options, content, callback) {
 
 /**
  * Update the meta data of an object.
+ * @param {Object}    options
+ * @param {string}    options        regarded as name of object
+ * @param {Object}   [meta]          meta data
+ * @param {string}   [metaFlag='w']  'a' = append, 'w' = write
+ * @param {Function} [callback]
  */
 Connection.prototype.createObjectMeta = function(options, meta, metaFlag, callback) {
 	let args = new overload2.ParamList(
