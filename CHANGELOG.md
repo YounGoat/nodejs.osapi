@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.9.0] - Aug 2nd, 2018
+
+*	Make `(new swift.Connection)` use `keepAlive` connections on requesting.
+
 ##	[0.8.7] - July 14th, 2018
 
 *	Fixed bug in `(new swift.Connection).createObject()` that it will fail if object name contains non-ASCII characters.

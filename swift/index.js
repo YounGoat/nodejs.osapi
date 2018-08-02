@@ -310,11 +310,20 @@ Connection.prototype.connect = function(callback) { return PoC(done => {
 
 				// Header "Accept" is inferior to query "format".
 				'Accept': 'application/json',
-			}
+			},
+
+			settings: {
+				keepAlive: true,
+			},
 		};
 
-		let pipingAgentOptions = Object.assign({}, agentOptions, 
-			{ settings: { piping : true, pipingOnly : true } });
+		let pipingAgentOptions = Object.assign({}, agentOptions, { 
+			settings: { 
+				keepAlive: true, 
+				piping : true, 
+				pipingOnly : true,
+			}, 
+		});
 
 		this.agent = new SimpleAgent(agentOptions);
 		this.pipingAgent = new SimpleAgent(pipingAgentOptions);
