@@ -61,6 +61,10 @@ const MODULE_REQUIRE = 1
 
 	, TypeContent = overload2.Type.or('object', 'string', Buffer, stream.Readable)
 
+	, encodeObjectName = (name) => {
+		return name.split('/').map(encodeURIComponent).join('/');
+	}
+
 	, encodeAndAppendQuery = (urlname, options, queryNames) => {
 		urlname = urlname.split('/').map(encodeURIComponent).join('/');
 
@@ -371,17 +375,17 @@ Connection.prototype.copyObject = function(source, target, callback) {
 		let urlname = encodeAndAppendQuery(`${source.container}/${source.name}`);
 
 		let headers = {};
-		headers['Destination'] = `${target.container}/${target.name}`;
+		headers['Destination'] = `${target.container}/${encodeObjectName(target.name)}`;
 
 		this.agent.copy(urlname, headers, (err, response) => {
-			err = err || this._parseResponseError('OBJECT_CREATE', { name: options.name }, [ 201 ], response);
+			err = err || this._parseResponseError('OBJECT_COPY', { source, target }, [ 201 ], response);
 			if (err) {
 				done(err, null);
 			}
 			else {
 				done(null, {
 					transId: response.headers['x-trans-id'],
-					etag: response.headers['etag']
+					etag: response.headers['etag'],
 				});
 			}
 		});
