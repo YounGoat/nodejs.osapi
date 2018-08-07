@@ -65,11 +65,11 @@ const MODULE_REQUIRE = 1
 		return name.split('/').map(encodeURIComponent).join('/');
 	}
 
-	, encodeAndAppendQuery = (urlname, options, queryNames) => {
+	, encodeAndAppendQuery = (urlname, config, queryNames) => {
 		urlname = urlname.split('/').map(encodeURIComponent).join('/');
 
-		if (options) {
-			let queries = queryNames ? cloneObject(options, queryNames) : options;
+		if (config) {
+			let queries = queryNames ? cloneObject(config, queryNames) : config;
 			let query = querystring.stringify(queries);
 			if (query) {
 				urlname += `?${query}`;
@@ -153,27 +153,36 @@ const MODULE_REQUIRE = 1
  * Actually, we will request a new token, rather than to build a chanel between the client and the server.
  * @class
  * 
- * @param  {Object}  options 
+ * @param  {object}  config 
+ * @param  {object}  settings
  * 
- * @param  {string}  options.endPoint     
- * @param  {string}  options.url           alias of "options.endPoint"
+ * @param  {string}  config.endPoint     
+ * @param  {string}  config.url           alias of "config.endPoint"
  * 
- * @param  {string} [options.username]
- * @param  {string} [options.subusername]
- * @param  {string} [options.subuser]      alias of "options.username:options.subusername"
+ * @param  {string} [config.username]
+ * @param  {string} [config.subusername]
+ * @param  {string} [config.subuser]      alias of "config.username:config.subusername"
  * 
- * @param  {string} [options.key]
- * @param  {string} [options.password]     alias of "options.key"
+ * @param  {string} [config.key]
+ * @param  {string} [config.password]     alias of "config.key"
  * 
- * @param  {string} [options.container]    
- * @param  {string} [options.bucket]       alias of "options.container". Bucket is a concept of Amazon S3, it is known as "container" in OpenStack Swift.
+ * @param  {string} [config.container]    
+ * @param  {string} [config.bucket]       alias of "config.container". Bucket is a concept of Amazon S3, it is known as "container" in OpenStack Swift.
+ * 
+ * @param  {dns-agent} [settings.dnsAgent]
+ * @param  {boolean}   [settings.keepAlive]
  */
-const Connection = function(options) {
-	// Clone and uniform the input options.
-	options = cloneObject(options, (key, value) => [ key.toLowerCase(), value ]);
+const Connection = function(config, settings) {
+	// Clone and uniform the input config.
+	config = cloneObject(config, (key, value) => [ key.toLowerCase(), value ]);
 
-	this.container = if2(options.container, options.bucket);
-	this.tempURLKey = options.tempurlkey;
+	this.settings = Object.assign({
+		dnsAgent: null,
+		keepAlive: true,
+	}, settings);
+
+	this.container = if2(config.container, config.bucket);
+	this.tempURLKey = config.tempurlkey;
 	
 	this.authToken = null;
 	this.storageUrl = null;
@@ -183,11 +192,11 @@ const Connection = function(options) {
 	// subuser
 	// username & subUsername
 	var subuser = null;
-	if (options.subuser) {
-		subuser = options.subuser;
+	if (config.subuser) {
+		subuser = config.subuser;
 	}
-	else if (options.username && options.subusername) {
-		subuser = `${options.username}:${options.subusername}`;
+	else if (config.username && config.subusername) {
+		subuser = `${config.username}:${config.subusername}`;
 	}
 	if (!subuser) {
 		throw new OptionsAbsentError('subuser', ['username,', 'subusername']);
@@ -196,13 +205,13 @@ const Connection = function(options) {
 	[ this.username, this.subUsername ] = subuser.split(':');
 
 	// key
-	this.key = options.key;
+	this.key = config.key;
 	if (!this.key) {
 		throw new OptionsAbsentError('key');
 	}
 
 	// endpoint
-	this.endPoint = if2(options.endpoint, options.url);
+	this.endPoint = if2(config.endpoint, config.url);
 	if (!this.endPoint) {
 		throw new OptionsAbsentError('endPoint');
 	}
@@ -251,11 +260,11 @@ Connection.prototype._action = function(action, callback) {
 
 /**
  * Generate a standard RequestRefusedError by parsing the response from remote storage service.
- * @param {Object}       options
- * @param {string}       options.action
- * @param {Object}       options.meta
- * @param {number[]}     options.expect expected status codes
- * @param {htp.Response} options.response
+ * @param {Object}       config
+ * @param {string}       config.action
+ * @param {Object}       config.meta
+ * @param {number[]}     config.expect expected status codes
+ * @param {htp.Response} config.response
  */
 Connection.prototype._parseResponseError = function(action, meta, expect, response) {
 	if (expect.includes(response.statusCode)) {
@@ -284,7 +293,8 @@ Connection.prototype.connect = function(callback) { return PoC(done => {
 		'X-Auth-User' : this.subuser,
 		'X-Auth-Key'  : this.key,
 	};
-	htp.get(authurl, headers, (err, res) => {
+	
+	htp(this.settings).get(authurl, headers, (err, res) => {
 		err = err || this._parseResponseError('AUTH', null, [ 204 ], res);
 		if (err) {
 			this.emit('error', err);
@@ -316,17 +326,11 @@ Connection.prototype.connect = function(callback) { return PoC(done => {
 				'Accept': 'application/json',
 			},
 
-			settings: {
-				keepAlive: true,
-			},
+			settings: this.settings,
 		};
 
 		let pipingAgentOptions = Object.assign({}, agentOptions, { 
-			settings: { 
-				keepAlive: true, 
-				piping : true, 
-				pipingOnly : true,
-			}, 
+			settings: Object.assign({} , this.settings, { piping : true,  pipingOnly : true }),
 		});
 
 		this.agent = new SimpleAgent(agentOptions);
@@ -394,30 +398,30 @@ Connection.prototype.copyObject = function(source, target, callback) {
 
 /**
  * Create new container(bucket) on remote storage.
- * @param  {Object}           options
- * @param  {string}           options            regard as the name(key) of object to be stored
- * @param  {string}           options.name       name(key) of object to be stored
- * @param  {Object}          [options.meta]      meta data of object to be stored
+ * @param  {Object}           config
+ * @param  {string}           config            regard as the name(key) of object to be stored
+ * @param  {string}           config.name       name(key) of object to be stored
+ * @param  {Object}          [config.meta]      meta data of object to be stored
  * @param  {Function}        [callback]          function(err, data)
  */
-Connection.prototype.createContainer = function(options, callback) {
+Connection.prototype.createContainer = function(config, callback) {
 	// ---------------------------
 	// Uniform arguments.
 
-	if (typeof options == 'string') {
-		options = { name: options };
+	if (typeof config == 'string') {
+		config = { name: config };
 	}
-	options = Object.assign({}, options);
+	config = Object.assign({}, config);
 
 	return this._action((done) => {
-		let urlname = encodeAndAppendQuery(options.name);
-		let headers = cloneObject(options.meta, (name, value) => [ `X-Container-Meta-${name}`, reASCII.test(value) ? value : mifo.base64.encode(value) ]);
+		let urlname = encodeAndAppendQuery(config.name);
+		let headers = cloneObject(config.meta, (name, value) => [ `X-Container-Meta-${name}`, reASCII.test(value) ? value : mifo.base64.encode(value) ]);
 		let body = '';
 
 		this.agent.put(urlname, headers, body, (err, response) => {
 			err = err || this._parseResponseError(
 				'CONTAINER_CREATE', 
-				cloneObject(options, ['name']),
+				cloneObject(config, ['name']),
 				[ 201, 202 ],
 				response
 			);
@@ -431,26 +435,26 @@ Connection.prototype.createContainer = function(options, callback) {
 
 /**
  * Put an object to remote storage.
- * @param  {Object}           options
- * @param  {string}           options                 regard as the name(key) of object to be stored
- * @param  {string}           options.name            name(key) of object to be stored
- * @param  {string}          [options.contentType]    
- * @param  {Object}          [options.meta]           meta data of object to be stored
- * @param  {string}          [options.metaFlag]       if set, only update meta data without replacing object content
- * @param  {boolean}         [options.suppressNotFoundError]
- * @param  {string}          [options.container]      container/bucket to place the object, 
+ * @param  {Object}           config
+ * @param  {string}           config                 regard as the name(key) of object to be stored
+ * @param  {string}           config.name            name(key) of object to be stored
+ * @param  {string}          [config.contentType]    
+ * @param  {Object}          [config.meta]           meta data of object to be stored
+ * @param  {string}          [config.metaFlag]       if set, only update meta data without replacing object content
+ * @param  {boolean}         [config.suppressNotFoundError]
+ * @param  {string}          [config.container]      container/bucket to place the object, 
  *                                                    by default current container of the connection will be used
  * @param  {string}          [content]                object content text
  * @param  {stream.Readable} [content]                object content stream
  * @param  {Buffer}          [content]                object content buffer
  * @param  {Function}        [callback]               function(err, data)
  */
-Connection.prototype.createObject = function(options, content, callback) {
+Connection.prototype.createObject = function(config, content, callback) {
 	// ---------------------------
 	// Analyse and uniform arguments.
 
 	let args = new overload2.ParamList(
-		/* options */
+		/* config */
 		overload2.Type.or('object', 'string'),
 
 		/* content */
@@ -464,23 +468,23 @@ Connection.prototype.createObject = function(options, content, callback) {
 		throw new Error('invalid arguments');
 	}
 	else {
-		[ options, content, callback ] = args;
+		[ config, content, callback ] = args;
 
 		if (typeof content == 'undefined' || content == null) content = '';
 
-		if (typeof options == 'string') {
-			options = { name: options };
+		if (typeof config == 'string') {
+			config = { name: config };
 		}
-		options = Object.assign({
+		config = Object.assign({
 			// Use property of current connection as default.		
 			container: this.container,
-		}, options);
+		}, config);
 	}
 
 	return this._action((done) => {
-		let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`);
+		let urlname = encodeAndAppendQuery(`${config.container}/${config.name}`);
 
-		let headers = parseOptions(options, {
+		let headers = parseOptions(config, {
 			caseSensitive: false,
 			explicit: true,
 			columns: [
@@ -488,10 +492,10 @@ Connection.prototype.createObject = function(options, content, callback) {
 			]
 		});
 
-		if (options.meta) {
-			for (let name in options.meta) {
+		if (config.meta) {
+			for (let name in config.meta) {
 				// @tag 20180605.a
-				let value = options.meta[name];
+				let value = config.meta[name];
 				if (!reASCII.test(value)) value = mifo.base64.encode(value);
 				headers[`X-Object-Meta-${name}`] = value;
 			}
@@ -502,19 +506,19 @@ Connection.prototype.createObject = function(options, content, callback) {
 
 		// To rewrite metadata of an existing object.
 		// The old metadata will be deleted.
-		if (options.metaFlag == 'w') {
+		if (config.metaFlag == 'w') {
 			method = 'post';
 		}
 
 		// To append metadata of an existing object.
-		else if (options.metaFlag == 'a') {
+		else if (config.metaFlag == 'a') {
 			method = 'copy';
 			// Destination is as same as original path.
 			headers['Destination'] = urlname;
 		}
 
 		this.agent[method](urlname, headers, content, (err, response) => {
-			err = err || this._parseResponseError('OBJECT_CREATE', { name: options.name }, 
+			err = err || this._parseResponseError('OBJECT_CREATE', { name: config.name }, 
 				[ 
 					201, // Created, PUT
 					202, // Accept, POST
@@ -529,7 +533,7 @@ Connection.prototype.createObject = function(options, content, callback) {
 					etag: response.headers['etag']
 				};
 			}
-			else if (isNotFoundError(err) && options.suppressNotFoundError) {
+			else if (isNotFoundError(err) && config.suppressNotFoundError) {
 				err = null;
 			}
 			done(err, data);
@@ -539,15 +543,15 @@ Connection.prototype.createObject = function(options, content, callback) {
 
 /**
  * Update the meta data of an object.
- * @param {Object}    options
- * @param {string}    options        regarded as name of object
+ * @param {Object}    config
+ * @param {string}    config        regarded as name of object
  * @param {Object}   [meta]          meta data
  * @param {string}   [metaFlag='w']  'a' = append, 'w' = write
  * @param {Function} [callback]
  */
-Connection.prototype.createObjectMeta = function(options, meta, metaFlag, callback) {
+Connection.prototype.createObjectMeta = function(config, meta, metaFlag, callback) {
 	let args = new overload2.ParamList(
-		/* options */
+		/* config */
 		overload2.Type.or('object', 'string'),
 
 		/* meta */
@@ -564,37 +568,37 @@ Connection.prototype.createObjectMeta = function(options, meta, metaFlag, callba
 		throw new Error('invalid arguments');
 	}
 	else {
-		[ options, meta, metaFlag, callback ] = args;
+		[ config, meta, metaFlag, callback ] = args;
 
-		if (typeof options == 'string') {
-			options = { name: options };
+		if (typeof config == 'string') {
+			config = { name: config };
 		}
-		options = Object.assign({ meta, metaFlag }, options);
-		return this.createObject(options, callback);
+		config = Object.assign({ meta, metaFlag }, config);
+		return this.createObject(config, callback);
 	}
 };
 
 /**
- * @param  {Object}           options
- * @param  {string}           options              regard as options.name
- * @param  {string}          [options.name]        container name
+ * @param  {Object}           config
+ * @param  {string}           config              regard as config.name
+ * @param  {string}          [config.name]        container name
  * @param  {Function}        [callback]
  */
-Connection.prototype.deleteContainer = function(options, callback) {
+Connection.prototype.deleteContainer = function(config, callback) {
 	// ---------------------------
 	// Uniform arguments.
 	
-	if (typeof options == 'string') {
-		options = { name: options };
+	if (typeof config == 'string') {
+		config = { name: config };
 	}
-	options = Object.assign({}, options);
+	config = Object.assign({}, config);
 	
 	return this._action((done) => {
-		let urlname = encodeAndAppendQuery(`${options.name}`);
+		let urlname = encodeAndAppendQuery(`${config.name}`);
 		this.agent.delete(urlname, (err, response) => {
 			err = err || this._parseResponseError(
 				'CONTAINER_DELETE', 
-				cloneObject(options, ['name']),
+				cloneObject(config, ['name']),
 				[ 204 ],
 				response
 			);
@@ -604,30 +608,30 @@ Connection.prototype.deleteContainer = function(options, callback) {
 };
 
 /**
- * @param  {Object}           options
- * @param  {string}           options              regard as options.name
- * @param  {string}          [options.container]   container name
- * @param  {string}          [options.name]        name(key) of object
+ * @param  {Object}           config
+ * @param  {string}           config              regard as config.name
+ * @param  {string}          [config.container]   container name
+ * @param  {string}          [config.name]        name(key) of object
  * @param  {Function}        [callback]
  */
-Connection.prototype.deleteObject = function(options, callback) {
+Connection.prototype.deleteObject = function(config, callback) {
 	// ---------------------------
 	// Uniform arguments.
 	
-	if (typeof options == 'string') {
-		options = { name: options };
+	if (typeof config == 'string') {
+		config = { name: config };
 	}
-	options = Object.assign({
+	config = Object.assign({
 		// Use property of current connection as default.
 		container: this.container,
-	}, options);
+	}, config);
 	
 	return this._action((done) => {
-		let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`);
+		let urlname = encodeAndAppendQuery(`${config.container}/${config.name}`);
 		this.agent.delete(urlname, (err, response) => {
 			err = err || this._parseResponseError(
 				'OBJECT_DELETE', 
-				cloneObject(options, ['container', 'name']),
+				cloneObject(config, ['container', 'name']),
 				[ 204 ],
 				response
 			);
@@ -637,26 +641,26 @@ Connection.prototype.deleteObject = function(options, callback) {
 };
 
 /**
- * @param  {Object}   [options]
- * @param  {number}   [options.limit]   return top n(limit) containers
- * @param  {string}   [options.marker]  name of container where cursor on
+ * @param  {Object}   [config]
+ * @param  {number}   [config.limit]   return top n(limit) containers
+ * @param  {string}   [config.marker]  name of container where cursor on
  * @param  {Function} [callback]
  */
-Connection.prototype.findContainers = function(options, callback) {
+Connection.prototype.findContainers = function(config, callback) {
 // ---------------------------
 	// Uniform arguments.
 
 	if (typeof arguments[0] == 'function') {
-		options = {};
+		config = {};
 		callback = arguments[0];
 	}
 
-	if (!options) {
-		options = {};
+	if (!config) {
+		config = {};
 	}
 
 	return this._action((done) => {
-		let urlname = encodeAndAppendQuery('/', options, [ 'limit', 'marker' ]);
+		let urlname = encodeAndAppendQuery('/', config, [ 'limit', 'marker' ]);
 		this.agent.get(urlname, (err, response) => {
 			if (err) return done(err);
 			
@@ -668,28 +672,28 @@ Connection.prototype.findContainers = function(options, callback) {
 
 /**
  * Find some objects from remote storage.
- * @param  {Object}           options
- * @param  {string}           options              regarded as options.prefix
- * @param  {string}          [options.container]   container name
- * @param  {char}            [options.delimiter]   path delimiter, READMORE for details
- * @param  {string}          [options.marker]      name of object reached in last time
- * @param  {string}          [options.prefix]      prefix of name(key) of objects
- * @param  {string}          [options.path]        leading path
- * @param  {number}          [options.limit]       maximum number of returned objects.
+ * @param  {Object}           config
+ * @param  {string}           config              regarded as config.prefix
+ * @param  {string}          [config.container]   container name
+ * @param  {char}            [config.delimiter]   path delimiter, READMORE for details
+ * @param  {string}          [config.marker]      name of object reached in last time
+ * @param  {string}          [config.prefix]      prefix of name(key) of objects
+ * @param  {string}          [config.path]        leading path
+ * @param  {number}          [config.limit]       maximum number of returned objects.
  *                                                 By default, up to 10,000 will be returned. 
  *                                                 The maximum value is configurable for server admin.
  * @param  {Function}        [callback]
  * 
  * -- READMORE：path and delimiter --
- * name(key) of objects are also regarded as path. And options.delimiter is 
+ * name(key) of objects are also regarded as path. And config.delimiter is 
  * used to suppose path delimiter as we are fimilar with path.
  * 
  * Suppose that following object names(keys) exist,
  *   [1] foo
  *   [2] foo/bar/0
  *   [3] foo/bar/1
- * When options.delimiter absent, all objects matched.
- * When options.delimiter set to '/', it will return
+ * When config.delimiter absent, all objects matched.
+ * When config.delimiter set to '/', it will return
  *   { name: 'foo' }
  *   { subir: 'foo/' }
  * 
@@ -697,32 +701,32 @@ Connection.prototype.findContainers = function(options, callback) {
  * Suppose that following object names(keys) exist,
  *   [1] foo/bar/0
  *   [2] foo/quz/1
- * options.path "foo/bar" matches [1]
- * options.path "foo" matches [1][2]
- * options.path "fo" matches NONE
- * options.prefix "fo" matches [1][2]
+ * config.path "foo/bar" matches [1]
+ * config.path "foo" matches [1][2]
+ * config.path "fo" matches NONE
+ * config.prefix "fo" matches [1][2]
  * 
  * -- READMORE: should name prefixed with / ? --
  * 
  */
-Connection.prototype.findObjects = function(options, callback) {
+Connection.prototype.findObjects = function(config, callback) {
 	// ---------------------------
 	// Uniform arguments.
 
-	if (typeof options == 'string') {
-		options = { prefix: options };
+	if (typeof config == 'string') {
+		config = { prefix: config };
 	}
-	options = Object.assign({
+	config = Object.assign({
 		// Use property of current connection as default.
 		container: this.container,
-	}, options);
+	}, config);
 	
 	return this._action((done) => {
-		let urlname = encodeAndAppendQuery(`${options.container}`, options, [ 'delimiter', 'limit', 'path', 'prefix', 'marker' ]);
+		let urlname = encodeAndAppendQuery(`${config.container}`, config, [ 'delimiter', 'limit', 'path', 'prefix', 'marker' ]);
 		this.agent.get(urlname, (err, response) => {
 			err = err || this._parseResponseError(
 				'OBJECT_FIND', 
-				cloneObject(options, [ 'container' ]),
+				cloneObject(config, [ 'container' ]),
 				[ 200, 204 ],
 				response
 			);
@@ -734,39 +738,39 @@ Connection.prototype.findObjects = function(options, callback) {
 };
 
 /**
- * @param  {Object}           options
- * @param  {string}           options           regard as the name(key) of object to be stored
- * @param  {string}           options.name      name(key) of object to be stored
- * @param  {number}           options.ttl       time to live (in seconds)
- * @param  {string}           options.container container/bucket to place the object
+ * @param  {Object}           config
+ * @param  {string}           config           regard as the name(key) of object to be stored
+ * @param  {string}           config.name      name(key) of object to be stored
+ * @param  {number}           config.ttl       time to live (in seconds)
+ * @param  {string}           config.container container/bucket to place the object
  * @return {string}
  * 
  * -- REFERENCES --
  * https://docs.openstack.org/kilo/config-reference/content/object-storage-tempurl.html
  */
-Connection.prototype.generateTempUrl = function(options, callback) {
+Connection.prototype.generateTempUrl = function(config, callback) {
 	// ---------------------------
 	// Uniform arguments.
 
-	if (typeof options == 'string') {
-		options = { name: options };
+	if (typeof config == 'string') {
+		config = { name: config };
 	}
-	options = Object.assign({	
+	config = Object.assign({	
 		// Use property of current connection as default.
 		container: this.container,		
 		// Default ttl is 24 hours.
 		ttl: 86400,
-	}, options);
+	}, config);
 
 	return this._action((done) => {
-		let urlname = this.storageUrl + '/' + options.container + '/' + encodeAndAppendQuery(options.name);
-		let temp_url_expires = parseInt(Date.now() / 1000) + options.ttl;
+		let urlname = this.storageUrl + '/' + config.container + '/' + encodeAndAppendQuery(config.name);
+		let temp_url_expires = parseInt(Date.now() / 1000) + config.ttl;
 		let temp_url_sig;
 	
 		// Genereate temp_url_sig.
 		if (1) {
 			let method = 'GET';
-			let pathname = `/v1/${options.container}/${options.name}`;
+			let pathname = `/v1/${config.container}/${config.name}`;
 			let body = [ method, temp_url_expires, pathname ].join('\n');
 
 			// Generate an HMAC (Hash-based Message Authentication Code) using a SHA-1 hashing algorithm. 
@@ -802,29 +806,29 @@ Connection.prototype.isConnected = function() {
 
 /**
  * Retrieve an object from remote storage.
- * @param  {Object}           options
- * @param  {string}           options                 regard as options.name
- * @param  {string}          [options.name]           name(key) of object
- * @param  {boolean}         [options.suppressNotFoundError=false]
+ * @param  {Object}           config
+ * @param  {string}           config                 regard as config.name
+ * @param  {string}          [config.name]           name(key) of object
+ * @param  {boolean}         [config.suppressNotFoundError=false]
  * @param  {Function}        [callback]
  */
-Connection.prototype.readContainer = function(options, callback) {
+Connection.prototype.readContainer = function(config, callback) {
 	// ---------------------------
 	// Uniform arguments.
 	
-	if (typeof options == 'string') {
-		options = { name: options };
+	if (typeof config == 'string') {
+		config = { name: config };
 	}
-	options = Object.assign({
+	config = Object.assign({
 		suppressNotFoundError: false,
-	}, options);
+	}, config);
 	
 	return this._action((done) => {
-		let urlname = encodeAndAppendQuery(`${options.name}`, options, []);
+		let urlname = encodeAndAppendQuery(`${config.name}`, config, []);
 		this.agent.head(urlname, (err, response) => {
 			err = err || this._parseResponseError(
 				'CONTAINER_GET', 
-				cloneObject(options, [ 'name' ]),
+				cloneObject(config, [ 'name' ]),
 				[ 204 ],
 				response
 			);
@@ -832,7 +836,7 @@ Connection.prototype.readContainer = function(options, callback) {
 			if (!err) {
 				data = parseContainerMeta(response);
 			}
-			else if (isNotFoundError(err) && options.suppressNotFoundError) {
+			else if (isNotFoundError(err) && config.suppressNotFoundError) {
 				err = null;
 			}
 			done(err, data);
@@ -842,44 +846,44 @@ Connection.prototype.readContainer = function(options, callback) {
 
 /**
  * Retrieve an object from remote storage.
- * @param  {Object}           options
- * @param  {string}           options                 regard as options.name
- * @param  {string}          [options.container]      container name
- * @param  {string}          [options.name]           name(key) of object
- * @param  {boolean}         [options.onlyMeta=false] 
- * @param  {boolean}         [options.suppressNotFoundError=false]
+ * @param  {Object}           config
+ * @param  {string}           config                 regard as config.name
+ * @param  {string}          [config.container]      container name
+ * @param  {string}          [config.name]           name(key) of object
+ * @param  {boolean}         [config.onlyMeta=false] 
+ * @param  {boolean}         [config.suppressNotFoundError=false]
  * @param  {Function}        [callback]
  */
-Connection.prototype.readObject = function(options, callback) {
+Connection.prototype.readObject = function(config, callback) {
 	// ---------------------------
 	// Uniform arguments.
 	
-	if (typeof options == 'string') {
-		options = { name: options };
+	if (typeof config == 'string') {
+		config = { name: config };
 	}
-	options = Object.assign({
+	config = Object.assign({
 		// Use property of current connection as default.
 		container: this.container, 
 		onlyMeta: false,
 		suppressNotFoundError: false,
-	}, options);
+	}, config);
 		
 	return this._action((done) => {
-		let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`, options, []);
-		let method = options.onlyMeta ? 'head' : 'get';
+		let urlname = encodeAndAppendQuery(`${config.container}/${config.name}`, config, []);
+		let method = config.onlyMeta ? 'head' : 'get';
 		this.agent[method](urlname, (err, response) => {
 			err = err || this._parseResponseError(
 				'OBJECT_GET', 
-				cloneObject(options, [ 'name' ]),
+				cloneObject(config, [ 'name' ]),
 				[ 200 ],
 				response
 			);
 			let data = null;
 			if (!err) {
 				data = parseObjectMeta(response);
-				if (!options.onlyMeta) data.buffer = response.bodyBuffer;
+				if (!config.onlyMeta) data.buffer = response.bodyBuffer;
 			}
-			else if (isNotFoundError(err) && options.suppressNotFoundError) {
+			else if (isNotFoundError(err) && config.suppressNotFoundError) {
 				err = null;
 			}
 			done(err, data);
@@ -887,36 +891,36 @@ Connection.prototype.readObject = function(options, callback) {
 	}, callback);
 };
 
-Connection.prototype.readObjectMeta = function(options, callback) {
-	if (typeof options == 'string') {
-		options = { name: options };
+Connection.prototype.readObjectMeta = function(config, callback) {
+	if (typeof config == 'string') {
+		config = { name: config };
 	}
-	options = Object.assign({ onlyMeta: true }, options);
-	return this.readObject(options, callback);
+	config = Object.assign({ onlyMeta: true }, config);
+	return this.readObject(config, callback);
 };
 
 /**
  * Retrieve an object from remote storage.
- * @param  {Object}           options
- * @param  {string}           options              regard as options.name
- * @param  {string}          [options.container]   container name
- * @param  {string}          [options.name]        name(key) of object
+ * @param  {Object}           config
+ * @param  {string}           config              regard as config.name
+ * @param  {string}          [config.container]   container name
+ * @param  {string}          [config.name]        name(key) of object
  * @param  {Function}        [callback]
  * @return {stream.Readable}
  */
-Connection.prototype.pullObject = function(options, callback) {
+Connection.prototype.pullObject = function(config, callback) {
 	// ---------------------------
 	// Uniform arguments.
 	
-	if (typeof options == 'string') {
-		options = { name: options };
+	if (typeof config == 'string') {
+		config = { name: config };
 	}
-	options = Object.assign({
+	config = Object.assign({
 		// Use property of current connection as default.
 		container: this.container,
-	}, options);	
+	}, config);	
 	
-	let urlname = encodeAndAppendQuery(`${options.container}/${options.name}`, options, []);
+	let urlname = encodeAndAppendQuery(`${config.container}/${config.name}`, config, []);
 	let output = new Receiver();
 	let onCall = (err, meta) => {
 		if (err) {
@@ -932,7 +936,7 @@ Connection.prototype.pullObject = function(options, callback) {
 			.on('response', (response) => {
 				let err = this._parseResponseError(
 					'OBJECT_GET',
-					cloneObject(options, [ 'name' ]),
+					cloneObject(config, [ 'name' ]),
 					[ 200 ],
 					response
 				);

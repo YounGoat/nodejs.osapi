@@ -2,16 +2,20 @@
 
 ##	Constructor
 
-*	Class __Connection__(Object *options*)
+*	Class __Connection__(Object *config*, Object *options*)
+
+*config* may include following properties:
+*	__config.endPoint__ *string*
+*	__config.subuser__ *string* OPTIONAL
+*	__config.username__ *string* OPTIONAL
+*	__config.subUsername__ *string* OPTIONAL
+*	__config.key__ *string*
+*	__config.tempURLKey__ *string* OPTIONAL
+*	__config.container__ *string* OPTIONAL
 
 *options* may include following properties:
-*	__options.endPoint__ *string*
-*	__options.subuser__ *string* OPTIONAL
-*	__options.username__ *string* OPTIONAL
-*	__options.subUsername__ *string* OPTIONAL
-*	__options.key__ *string*
-*	__options.tempURLKey__ *string* OPTIONAL
-*	__options.container__ *string* OPTIONAL
+*	__options.dnsAgent__ *dns-agent*
+*	__options.keppAlive__ *boolean* 
 
 ```javascript
 const swift = require('osapi/swift');
