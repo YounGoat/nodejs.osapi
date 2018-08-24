@@ -517,7 +517,7 @@ Connection.prototype.createObject = function(config, content, callback) {
 			headers['Destination'] = urlname;
 		}
 
-		this.agent[method](urlname, headers, content, (err, response) => {
+		let callback2 = (err, response) => {
 			err = err || this._parseResponseError('OBJECT_CREATE', { name: config.name }, 
 				[ 
 					201, // Created, PUT
@@ -537,7 +537,15 @@ Connection.prototype.createObject = function(config, content, callback) {
 				err = null;
 			}
 			done(err, data);
-		});
+		};
+
+		// Fix the bug that htp forbidden method COPY with payload.
+		if (method == 'copy') {
+			this.agent[method](urlname, headers, callback2);
+		}
+		else {
+			this.agent[method](urlname, headers, content, callback2);
+		}
 	}, callback);
 };
 

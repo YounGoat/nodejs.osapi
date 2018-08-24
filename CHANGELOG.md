@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[0.9.5] - Aug 24th, 2018
+
+*	Fixed bug in `(new swift.Connection).createObect()` invoking `(new htp.SimpleAgent).copy()` with payload.
+
 ##	[0.9.4] - Aug 6th, 2018
 
 *	Second parameter defined in `new swift.Connection(config, options)`.
