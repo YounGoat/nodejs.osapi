@@ -247,6 +247,10 @@ Connection.prototype.createObject = function(options, content, callback) {
                 headers[`x-amz-meta-${name}`] = options.meta[name];
             }
         }
+	    
+	if (options.acl) {
+            headers[`x-amz-acl`] = options.acl;
+        }
 
         this.agent.put(urlname, headers, content, (err, response) => {
             if (!err && ![ 200, 204 ].includes(response.statusCode)) {
