@@ -212,6 +212,7 @@ Connection.prototype.createBucket = function(options, callback) {
  * @param  {string}           options            regard as the name(key) of object to be stored
  * @param  {string}           options.name       name(key) of object to be stored
  * @param  {object}           options.meta       meta info of the object
+ * @param  {string}           options.acl        [EXPERIMENTAL] acl of the object
  * @param  {string}          [options.bucket]    container/bucket to place the object, 
  *                                               by default current container of the connection will be used
  * @param  {string}           content            object content text
@@ -247,8 +248,8 @@ Connection.prototype.createObject = function(options, content, callback) {
                 headers[`x-amz-meta-${name}`] = options.meta[name];
             }
         }
-	    
-	if (options.acl) {
+        
+        if (options.acl) {
             headers[`x-amz-acl`] = options.acl;
         }
 

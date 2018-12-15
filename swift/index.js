@@ -552,7 +552,9 @@ Connection.prototype.createObject = function(config, content, callback) {
 /**
  * Update the meta data of an object.
  * @param {Object}    config
- * @param {string}    config        regarded as name of object
+ * @param {string}    config         regarded as name of object
+ * @param {string}    config.name    name(key) of object to be stored
+ * @param {boolean}  [config.suppressNotFoundError]
  * @param {Object}   [meta]          meta data
  * @param {string}   [metaFlag='w']  'a' = append, 'w' = write
  * @param {Function} [callback]
