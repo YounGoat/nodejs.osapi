@@ -12,7 +12,7 @@ const MODULE_REQUIRE = 1
     , swift = noda.inRequire('swift')
     ;
 
-function createConnection(options) { 
+function createConnection(options, settings) { 
     options = cloneObject(options, (key, value) => [ key.toLowerCase(), value ]);
 
     let Conn = null;
@@ -23,7 +23,7 @@ function createConnection(options) {
         Conn = s3.Connection;
     }
 
-    return new Conn(options);
+    return new Conn(options, settings);
 }
 
 function isConnection(conn) {

@@ -1,21 +1,51 @@
-#	Class Connection in osapi/swift
+#	Class Connection (osapi/swift)
 
-##	Constructor
+##	Table of Contents
 
-*	Class __Connection__(Object *config*, Object *options*)
+* [APIs](#apis)
+	* [Constructor](#constructor)
+	* [-- basic --](#---basic---)
+	* [-- extended --](#---extended---)
+	* [connect()](#connect)
+	* [createObjectMeta()](#createobjectmeta)
+	* [generateTempUrl()](#generatetempurl)
 
-*config* may include following properties:
-*	__config.endPoint__ *string*
-*	__config.subuser__ *string* OPTIONAL
-*	__config.username__ *string* OPTIONAL
-*	__config.subUsername__ *string* OPTIONAL
-*	__config.key__ *string*
-*	__config.tempURLKey__ *string* OPTIONAL
-*	__config.container__ *string* OPTIONAL
+##	APIs
+
+Please read [Interface Connection](../connection.md) for illustrations of basic methods.
+
+###	Constructor
+
+*	Class __Connection__(Object *options* [, Object *htpSettings*])
 
 *options* may include following properties:
-*	__options.dnsAgent__ *dns-agent*
-*	__options.keppAlive__ *boolean* 
+*	__options.endPoint__ *string*  
+	Endpoint (URL base) of the object storage service.
+	
+*	__options.subuser__ *string* OPTIONAL  
+	The whole account name is compound of `<username>:<subUsername>`.  
+	If this property absent, both *username* and *subUsername* SHOULD be present.
+
+*	__options.username__ *string* OPTIONAL  
+	Main username.  
+	Generally, this property should be together with *subUsername*.
+
+*	__options.subUsername__ *string* OPTIONAL  
+	Sub username.  
+	Generally, this property should be together with *username*.
+
+*	__options.key__ *string*  
+	Key (something like password).
+
+*	__options.tempURLKey__ *string* OPTIONAL  
+	A special key used to generate temporary URLs. Then accessors may download the objects directly via such URLs without offering key.
+
+*	__options.container__ *string* OPTIONAL  
+	Default container (bucket) name.
+
+This package depends on `htp`, and the following settings are used by `htp`:
+*	__htpSettings.dnsAgent__ *dns-agent* OPTIONAL  
+*	__htpSettings.keppAlive__ *boolean* OPTIONAL DEFAULT(`true`) 
 
 ```javascript
 const swift = require('osapi/swift');
@@ -31,123 +61,76 @@ let conn = new swift.Connection({
 });
 ```
 
-##	connect()
+### -- basic --
+
+See [Interface Connection](../connection.md) for help info about basic methods.
+
+###	-- extended --
+
+###	connect()
 
 *	void __\<conn\>.connect__()
 
-##	createContainer()
+###	createObjectMeta()
 
-*	Promise __\<conn\>.createContainer__( string *containerName* )
-*	Promise __\<conn\>.createContainer__( object *options* )
-*	Connection __\<conn\>.createContainer__( string *containerName*, Function *callback* )
-*	Connection __\<conn\>.createContainer__( object *options*, Function *callback* )
+[ experimental ] Please take care of yourself when using the method.
 
-##	createObject()
+*	Promise | Connection __\<conn\>.createObjectMeta__( string *name* [, object *meta*, string *flag*, Function *callback* ] )
+*	Promise | Connection __\<conn\>.createObjectMeta__( object *options* [, object *meta*, string *flag*, Function *callback* ] )
 
-*	Promise __\<conn\>.createObject__( string *objectName*, *content* )
-*	Promise __\<conn\>.createObject__( object *options*, *content* )
-*	Connection __\<conn\>.createObject__( string *objectName*, *content*, Function *callback* )
-*	Connection __\<conn\>.createObject__( object *options*, *content*, Function *callback* )
+Parameters:
+*	__name__ *string*  
+	If the first argument is a string, it will be regarded as object name.
 
-##	createObjectMeta()
+*	__options__ *object*  
+	See next paragraph for details.
 
-*	Promise __\<conn\>.createObjectMeta__( string *objectName*, object *meta* [, string *flag*] )
-*	Promise __\<conn\>.createObjectMeta__( object *options*, object *meta* [, string *flag*] )
-*	Connection __\<conn\>.createObjectMeta__( string *objectName*, object *meta* [, string *flag*,] Function *callback* )
-*	Connection __\<conn\>.createObjectMeta__( object *options*, object *meta* [, string *flag*,] Function *callback* )
+*	__meta__ *object* OPTIONAL  
+	Meta data in key-value pairs.
 
-Parameter *flag* can be `a`, means to append metadata, or `w`, means to delete existing metadata and then write. Other values will be rejected.
+*	__flag__ *string* OPTIONAL DEFAULT(`'w'`)  
+	`'a'` = append  
+	`'w'` = write
 
-##	deleteContainer()
+So far, *options* accepts following properties:
 
-*	Promise __\<conn\>.deleteContainer__( string *containerName* )
-*	Promise __\<conn\>.deleteContainer__( object *options* )
-*	Connection __\<conn\>.deleteContainer__( string *containerName*, Function *callback* )
-*	Connection __\<conn\>.deleteContainer__( object *options*, Function *callback* )
-
-##	deleteObject()
-
-*	Promise __\<conn\>.deleteObject__( string *objectName* )
-*	Promise __\<conn\>.deleteObject__( object *options* )
-*	Connection __\<conn\>.deleteObject__( string *objectName*, Function *callback* )
-*	Connection __\<conn\>.deleteObject__( object *options*, Function *callback* )
-
-##	findContainers()
-
-*	Promise __\<conn\>.findContainers__( object *options* )
-*	Connection __\<conn\>.findContainers__(object *options* [, Function *callback* ])
-
-##	findObjects()
-
-*	Promise __\<conn\>.findObjects__( object *options* )
-*	Connection __\<conn\>.findObjects__( object *options*, Function *callback* )
-
-##	generateTempUrl()
-
-*	Promise __\<conn\>.generateTempUrl( string *objectName* )
-*	Promise __\<conn\>.generateTempUrl( object *options* )
-*	Connection __\<conn\>.generateTempUrl( string *objectName*, Function *callback* )
-*	Connection __\<conn\>.generateTempUrl( object *options*, Function *callback* )
-
-##	pullObject()
-
-*	stream.Readable __\<conn\>.pullObject__( string *objectName* )
-*	stream.Readable __\<conn\>.pullObject__( object *options* )
-
-The returned stream may emit following events:
--	__meta__  
-	Along with argument *meta* which contains metadata of the object. 
--	events which a readable stream may emit  
-	See [Class: stream.Readable](https://nodejs.org/dist/latest/docs/api/stream.html#stream_class_stream_readable) for details.
-
-##	readContainer()
-
-*	Promise __\<conn\>.readObject__( string *containerName* )
-*	Promise __\<conn\>.readObject__( object *options* )
-*	Connection __\<conn\>.readObject__( string *containerName*, Function *callback* )
-*	Connection __\<conn\>.readObject__( object *options*, Function *callback* )
-
-Parameter *options* may look like
-```javascript
-{
-	name, /* string */
+*	__options.bucket__ *string* OPTIONAL  
+	Bucket name.
 	
-	suppressNotFoundError, /* boolean DEFAULT false */
-	// If true, `null` will be returned when container not found.
-	// By default, an error will be thrown.
-}
-```
+*	__options.name__ *string*  
+	Object name.
 
-##	readObject()
-
-*	Promise __\<conn\>.readObject__( string *objectName* )
-*	Promise __\<conn\>.readObject__( object *options* )
-*	Connection __\<conn\>.readObject__( string *objectName*, Function *callback* )
-*	Connection __\<conn\>.readObject__( object *options*, Function *callback* )
-
-Parameter *options* may look like:
-```javascript
-{
-	container, /* string DEFAULT conn.container */
-	name, /* string */
+*	__options.suppressNotFoundError__ *boolean*  
+	Don't threw exception on `404 Not Found`.
 	
-	onlyMeta, /* boolean DEFAULT false */
-	// If true, only meta data will be returned.
+Once resolved:
 
-	suppressNotFoundError, /* boolean DEFAULT false */
-	// If true, `null` will be returned when object not found.
-	// By default, an error will be thrown.
-}
-```
+*	__result.requestId__ *string*  
+	Request / transaction Id.
 
-Object data will be returned via `callback(err, data)` or `Promise.resolve(data)` and look like:
-```javascript
-{
-	contentType, /* string */
-	contentLength, /* number */
-	etag, /* string */
-	lastModified, /* Date */
-	meta, /* Object */
-	buffer, /* Buffer */
-}
-```
+[- toc -][^toc]
+
+###	generateTempUrl()
+
+*	Promise | Connection __\<conn\>.generateTempUrl__( string *name* [, Function *callback* ] )
+*	Promise | Connection __\<conn\>.createObjectMeta__( object *options* [, Function *callback* ] )
+
+Parameters:
+*	__name__ *string*  
+	If the first argument is a string, it will be regarded as object name.
+
+*	__options__ *object*  
+	See next paragraph for details.
+
+So far, *options* accepts following properties:
+
+*	__options.bucket__ *string* OPTIONAL  
+	Bucket name.
+	
+*	__options.name__ *string*  
+	Object name.
+
+Once resolved:
+
+*	__result__ *string*  
+	A temporary URL.

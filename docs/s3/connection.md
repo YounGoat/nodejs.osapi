@@ -1,14 +1,45 @@
-#	Class Connection in osapi/s3
+#	Class Connection (osapi/s3)
 
-##	Constructor
+##  Table of Contents
 
-*	Class __Connection__(Object *options*)
+* [APIs](#apis)
+	* [Constructor](#constructor)
+	* [-- basic --](#---basic---)
+
+##  APIs
+
+Please read [Interface Connection](../connection.md) for illustrations of basic methods.
+
+###	Constructor
+
+*	Class __Connection__(Object *options* [, Object *htpSettings*])
 
 *options* may include following properties:
-*	__options.endPoint__ *string*
-*	__options.accessKey__ *string*
-*	__options.secretAccessKey__ *string*
-*	__options.bucket__ *string* OPTIONAL
+*	__options.endPoint__ *string*  
+    Endpoint (URL base) of the object storage service.
+
+*	__options.accessKey__ *string*  
+    Access key (something like username to identify the user).
+
+*	__options.secretAccessKey__ *string*  
+    Secret access key (something like password).
+
+*	__options.bucket__ *string* OPTIONAL  
+    Default bucket (container) name.
+
+*   __options.vendor__ *string* OPTIONAL  
+    Vendor who powers the service. It may be:
+    *   aliyun
+    *   aws
+    *   ceph DEFAULT
+
+    See [Compatible Services](../vendors.md) for details.
+
+This package depends on `htp`, and the following settings are used by `htp`:
+*	__htpSettings.dnsAgent__ *dns-agent* OPTIONAL  
+*	__htpSettings.keppAlive__ *boolean* OPTIONAL DEFAULT(`true`) 
+*   __options.rejectUnauthorized__ *boolean* OPTIONAL DEFAULT(`true`)    
+    DON'T SET `false` unless you are sure that the endpoint is safe.
 
 ```javascript
 const s3 = require('osapi/s3');
@@ -18,33 +49,10 @@ let conn = new s3.Connection({
     accessKey       : '380289ba59473a368c59',
     secretAccessKey : '380289ba59473a368c593c1f1de6efb0380289ba5',
     bucket          : 'bucketName',
+    vendor          : 'ceph',
 });
 ```
 
-##	createObject()
+### -- basic --
 
-*	Promise __\<conn\>.createObject__( string *objectName*, *content* )
-*	Promise __\<conn\>.createObject__( object *options* )
-*	Connection __\<conn\>.createObject__( string *objectName*, *content*, Function *callback* )
-*	Connection __\<conn\>.createObject__( object *options*, Function *callback* )
-
-##	deleteObject()
-
-*	Promise __\<conn\>.deleteObject__( string *objectName* )
-*	Promise __\<conn\>.deleteObject__( object *options* )
-*	Connection __\<conn\>.deleteObject__( string *objectName*, Function *callback* )
-*	Connection __\<conn\>.deleteObject__( object *options*, Function *callback* )
-
-##	generateTempUrl()
-
-*	Promise __\<conn\>.generateTempUrl( string *objectName* )
-*	Promise __\<conn\>.generateTempUrl( object *options* )
-*	Connection __\<conn\>.generateTempUrl( string *objectName*, Function *callback* )
-*	Connection __\<conn\>.generateTempUrl( object *options*, Function *callback* )
-
-##	readObject()
-
-*	Promise __\<conn\>.readObject__( string *objectName* )
-*	Promise __\<conn\>.readObject__( object *options* )
-*	Connection __\<conn\>.readObject__( string *objectName*, Function *callback* )
-*	Connection __\<conn\>.readObject__( object *options*, Function *callback* )
+See [Interface Connection](../connection.md) for help info about basic methods.

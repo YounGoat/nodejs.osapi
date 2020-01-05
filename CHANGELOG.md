@@ -2,6 +2,12 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[1.0.0] - Jan 5th, 2020
+
+This is a milestone version to be compatible with both *S3* server and *SWIFT* server. Before this version, it is nearly useless when faced with *S3* server.
+
+And, documentation is nearly completed.
+
 ##	[0.9.6] - Dec 15th, 2018
 
 *	New `options.acl` is supported in `(new s3.Connection).createObject()`.

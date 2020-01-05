@@ -4,4 +4,4 @@
 const s3 = require('osapi/s3');
 ```
 
-*   class [__s3.Connection__](./connection.md)
+*   class [__s3.Connection__](./connection.md) extends [__Connection__](../connection.md)

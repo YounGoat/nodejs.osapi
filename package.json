@@ -1,11 +1,9 @@
 {
     "name": "osapi",
-    "version": "0.9.6",
+    "version": "1.0.0",
     "description": "A common Object Storage API",
     "main": "index.js",
-    "scripts": {
-        "test": "node test"
-    },
+    "scripts": {},
     "author": {
         "name": "YounGoat",
         "email": "youngoat@163.com",
@@ -14,12 +12,15 @@
     "license": "ISC",
     "bin": {},
     "dependencies": {
-        "htp": "^0.10.3",
+        "europium": "0.0.1",
+        "htp": "^0.12.0",
+        "idata": "0.0.3",
         "if2": "^0.2.0",
-        "jinang": "^0.22.0",
+        "jinang": "^0.26.1",
         "mifo": "^0.0.2",
         "noda": "^0.5.0",
-        "overload2": "^0.3.1"
+        "overload2": "^0.3.1",
+        "xml2js": "^0.4.23"
     },
     "devDependencies": {},
     "directories": {},

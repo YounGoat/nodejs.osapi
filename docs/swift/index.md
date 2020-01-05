@@ -4,7 +4,7 @@
 const swift = require('osapi/swift');
 ```
 
-*   class [__swift.Connection__](./connection.md)
+*   class [__swift.Connection__](./connection.md) extends [__Connection__](../connection.md)
 *   [__swift.isNotFoundError()__](#swiftisnotfounderror)
 
 ##  swift.isNotFoundError()

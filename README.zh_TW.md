@@ -1,10 +1,6 @@
 #	osapi
 __通用對象存儲應用程式界面__
 
-[![total downloads of osapi](https://img.shields.io/npm/dt/osapi.svg)](https://www.npmjs.com/package/osapi)
-[![osapi's License](https://img.shields.io/npm/l/osapi.svg)](https://www.npmjs.com/package/osapi)
-[![latest version of osapi](https://img.shields.io/npm/v/osapi.svg)](https://www.npmjs.com/package/osapi)
-
 >	其他语言 / [English](./README.md) / [简体中文](./README.zh_CN.md)
 
 這套 API 很好地相容了 CEPH 對象存儲服務，因此取 __[ceph](https://www.npmjs.com/package/ceph)__ 作為本包的別名。你可以按照個人喜好，引用 `osapi` 或 `ceph` 包，兩個 NPM 包將保持同步更新。
@@ -71,77 +67,7 @@ conn.readObject('hello/world', (err, data) => {
 
 ##	API
 
-每套 __osapi/*__ 風格的 API 都會提供一個名為 `Connection` 的類，你可以從創建該類的實例開始，參見[快速開始](#快速開始)一節。
-
-通常，`Connection` 類的成員方法都是異步的：
-
-*   參數 `callback` 是可選的。
-*   如果未提供 `callback` 參數，那麼成員方法返回一個 `Promise` 實例。
-*   否則，`callback` 參數始終__應當__放在參數表的最末位置。
-*   並且，回調函數自身的參數表形如 `callback(error, data)`。
-
-###	自適應
-
-```javascript
-const osapi = require('osapi');
-
-// See osapi/swift and osapi/s3 for details of options and member methods of the created connection.
-const conn = osapi.createConnection(options);
-
-osapi.isConnection(conn);
-// RETURN: true
-
-osapi.getConnectionStyle(conn);
-// RETURN: 
-// * "s3"     if conn is instance of osapi/s3.Connection
-// * "swift"  if conn is instance of osapi/swift.Connection
-// * null     otherwise
-```
-
-###	osapi/swift
-
-`osapi/swift` 可以作為獨立模塊引用：
-
-```javascript
-const swift = require('osapi/swift');
-```
-
-相關細節及最新版本，請閱讀該子模塊的[詳細文檔](./docs/swift/index.md)。此處僅提供不甚完整的摘要：
-
-*	new __swift.Connection__(*object* options)
-*	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
-*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
-*	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
-*	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
-
-注意：自 0.1.0 版本起，__osapi__ 入口將獨立發展為兼容 *s3* 和 *swift* 風格的工具類，不再默認指向 __osapi/swift__。
-
-###	osapi/s3
-
-`osapi/s3` 可以作為獨立模塊引用：
-
-```javascript
-const swift = require('osapi/s3');
-```
-
-相關細節及最新版本，請閱讀該子模塊的[詳細文檔](./docs/s3/index.md)。此處僅提供不甚完整的摘要：
-
-*	new __s3.Connection__(*object* options)
-*	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
-*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
-*	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
-*	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
-
-###	自定義異常
-
-*	class __OptionAbsentError__
-*	class __RequestRefusedError__
-	-	string __\<instance\>.action__
-	-	Object __\<instance\>.meta__
-	-	Object __\<instance\>.response__
-		+	number __statusCode__
-		+	string __statusMessage__
-		+	string __code__
+请阅读 [文档](./docs/README.md)。
 
 ##  術語
 

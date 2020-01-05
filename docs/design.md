@@ -1,4 +1,4 @@
-#    Design Patterns Used in osapi
+#    Design Patterns Used in osapi | ceph
 
 So far, the main body of the package is two classes named `Connection` respectively belonging to __osapi/swift__ and __osapi/s3__. We interact with CEPH storages with the help of methods of `Connection` instances. These methods (called "the METHODs" or "a METHOD" hereinafter) are what I wanna talk about in this document.
 

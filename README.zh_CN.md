@@ -1,10 +1,6 @@
 #	osapi
 __通用对象存储应用程序接口__
 
-[![total downloads of osapi](https://img.shields.io/npm/dt/osapi.svg)](https://www.npmjs.com/package/osapi)
-[![osapi's License](https://img.shields.io/npm/l/osapi.svg)](https://www.npmjs.com/package/osapi)
-[![latest version of osapi](https://img.shields.io/npm/v/osapi.svg)](https://www.npmjs.com/package/osapi)
-
 >	其他语言 / [English](./README.md) / [繁體中文](./README.zh_TW.md)
 
 这套 API 很好地兼容了 CEPH 对象存储服务，因此取 __[ceph](https://www.npmjs.com/package/ceph)__ 作为本包的别名。你可以按照个人喜好，引用 `osapi` 或 `ceph` 包，两个 NPM 包将保持同步更新。
@@ -71,83 +67,7 @@ conn.readObject('hello/world', (err, data) => {
 
 ##	API
 
-每套 __osapi/*__ 风格的 API 都会提供一个名为 `Connection` 的类，你可以从创建该类的实例开始，参见[快速开始](#快速开始)一节。
-
-通常，`Connection` 类的成员方法都是异步的：
-
-*	参数 `callback` 是可选的。
-*	如果未提供 `callback` 参数，那么成员方法返回一个 `Promise` 实例。
-*	否则，`callback` 参数始终__应当__放在参数表的最末位置。
-*	并且，回调函数自身的参数表形如 `callback(error, data)`。
-
-###	自适应
-
-```javascript
-const osapi = require('osapi');
-
-// See osapi/swift and osapi/s3 for details of options and member methods of the created connection.
-const conn = osapi.createConnection(options);
-
-osapi.isConnection(conn);
-// RETURN: true
-
-osapi.getConnectionStyle(conn);
-// RETURN: 
-// * "s3"     if conn is instance of osapi/s3.Connection
-// * "swift"  if conn is instance of osapi/swift.Connection
-// * null     otherwise
-```
-
-###	osapi/swift
-
-`osapi/swift` 可以作为独立模块引用：
-
-```javascript
-const swift = require('osapi/swift');
-```
-
-相关细节和最新版本，请阅读该子模块的[详细文档](./docs/swift/index.md)。此处仅提供不甚完整的摘要：
-
-*	new __swift.Connection__(*object* options)
-*	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
-*	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
-*	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
-*	*stream.Readable* __\<conn\>.pullObject__(*object | string* options [, *function* callback ])  
-	返回的流对象可以触发以下事件:
-	-	__meta__  
-		携带参数 *meta*，包含有存储对象的元数据键值对。
-	-	只读流对象可以触发的其他事件    
-		详见 [Class: stream.Readable](https://nodejs.org/dist/latest/docs/api/stream.html#stream_class_stream_readable)。
-*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
-
-注意：自 0.1.0 版本起，__osapi__ 入口将独立发展为兼容 *s3* 和 *swift* 风格的工具类，不再默认指向 __osapi/swift__。
-
-###	osapi/s3
-
-`osapi/s3` 可以作为独立模块引用：
-
-```javascript
-const swift = require('osapi/s3');
-```
-
-相关细节和最新版本，请阅读该子模块的[详细文档](./docs/s3/index.md)。此处仅提供不甚完整的摘要：
-
-*	new __s3.Connection__(*object* options)
-*	__\<conn\>.createObject__(*object | string* options, content [, *function* callback ])
-*	__\<conn\>.readObject__(*object | string* options [, *function* callback ])
-*	__\<conn\>.deleteObject__(*object | string* options [, *function* callback ])
-*	__\<conn\>.generateTempUrl__(*object | string* options [, *function* callback ])
-
-###	自定义异常
-
-*	class __OptionAbsentError__
-*	class __RequestRefusedError__
-	-	string __\<instance\>.action__
-	-	Object __\<instance\>.meta__
-	-	Object __\<instance\>.response__
-		+	number __statusCode__
-		+	string __statusMessage__
-		+	string __code__
+请阅读 [文档](./docs/README.md)。
 
 ##  术语
 
