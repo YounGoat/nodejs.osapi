@@ -40,12 +40,19 @@ Please read [Interface Connection](../connection.md) for illustrations of basic 
 *	__options.tempURLKey__ *string* OPTIONAL  
 	A special key used to generate temporary URLs. Then accessors may download the objects directly via such URLs without offering key.
 
+*	__options.proxy__ *string* OPTIONAL  
+	HTTP(S) proxy.  
+	Same as __htpSettings.proxy__.
+
 *	__options.container__ *string* OPTIONAL  
 	Default container (bucket) name.
 
 This package depends on `htp`, and the following settings are used by `htp`:
 *	__htpSettings.dnsAgent__ *dns-agent* OPTIONAL  
 *	__htpSettings.keppAlive__ *boolean* OPTIONAL DEFAULT(`true`) 
+*   __htpSettings.rejectUnauthorized__ *boolean* OPTIONAL DEFAULT(`true`)    
+    DON'T SET `false` unless you are sure that the endpoint is safe.
+*	__htpSettings.proxy__ *string* OPTIONAL
 
 ```javascript
 const swift = require('osapi/swift');

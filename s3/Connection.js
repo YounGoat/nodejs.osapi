@@ -63,13 +63,17 @@ const Connection = function(options, settings) {
     // Clone and uniform the input options.
     options = cloneObject(options, (key, value) => [ key.toLowerCase(), value ]);
 
-    // HTTP agent settings.
-    settings = Object.assign({
+   // HTTP agent settings.
+	let defaultHtpSettings = {
 		dnsAgent: null,
-        keepAlive: true,
-        rejectUnauthorized: true,
-	}, settings);
-    this.settings = settings;
+		keepAlive: true,
+		rejectunauthorized: true,
+	};
+    this.settings = Object.assign(
+		defaultHtpSettings, 
+		cloneObject(options, [ 'proxy' ]), 
+		settings
+	);
     
     this.accessKey = if2(
         options.accesskey,
@@ -204,16 +208,15 @@ const Connection = function(options, settings) {
 
     let beforeCallback = (err, response) => {
         if (err) throw err;
-        console.log(response.headers);
         response.ossMeta = this._parseHeaders(response.headers);
         return response;
     };
 
     this.agent = new SimpleAgent({
         endPoint: this.endPoint,
+        settings: this.settings,
         beforeRequest,
         beforeCallback,
-        settings,
     });
 };
 

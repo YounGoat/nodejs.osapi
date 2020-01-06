@@ -88,13 +88,17 @@ const Connection = function(options, settings) {
 	// Clone and uniform the input options.
 	options = cloneObject(options, (key, value) => [ key.toLowerCase(), value ]);
 
-    // HTTP agent settings.
-    settings = Object.assign({
+	// HTTP agent settings.
+	let defaultHtpSettings = {
 		dnsAgent: null,
 		keepAlive: true,
 		rejectunauthorized: true,
-	}, settings);
-    this.settings = settings;
+	};
+    this.settings = Object.assign(
+		defaultHtpSettings, 
+		cloneObject(options, [ 'proxy' ]), 
+		settings
+	);
 
 	this.container = if2(options.container, options.bucket);
 	this.tempURLKey = options.tempurlkey;

@@ -2,6 +2,12 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[1.0.1] - Jan 6th, 2020
+
+*	Remove debugging sentences.
+*	Add `options.proxy` in `Connection(options)`.
+*	Make up for the flaw that slashes in object names are encoded unnecessarily.
+
 ##	[1.0.0] - Jan 5th, 2020
 
 This is a milestone version to be compatible with both *S3* server and *SWIFT* server. Before this version, it is nearly useless when faced with *S3* server.

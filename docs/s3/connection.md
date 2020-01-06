@@ -35,11 +35,16 @@ Please read [Interface Connection](../connection.md) for illustrations of basic 
 
     See [Compatible Services](../vendors.md) for details.
 
+*	__options.proxy__ *string* OPTIONAL  
+	HTTP(S) proxy.  
+	Same as __htpSettings.proxy__.
+
 This package depends on `htp`, and the following settings are used by `htp`:
 *	__htpSettings.dnsAgent__ *dns-agent* OPTIONAL  
 *	__htpSettings.keppAlive__ *boolean* OPTIONAL DEFAULT(`true`) 
-*   __options.rejectUnauthorized__ *boolean* OPTIONAL DEFAULT(`true`)    
+*   __htpSettings.rejectUnauthorized__ *boolean* OPTIONAL DEFAULT(`true`)    
     DON'T SET `false` unless you are sure that the endpoint is safe.
+*	__htpSettings.proxy__ *string* OPTIONAL
 
 ```javascript
 const s3 = require('osapi/s3');

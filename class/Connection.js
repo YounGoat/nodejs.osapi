@@ -77,10 +77,10 @@ Connection.prototype._action = function(action, callback) {
  * @return {string}
  */
 Connection.prototype._encodeUrl = function(pathname, query) {
-	if (typeof pathname == 'string') {
-		pathname = pathname.split('/');
+	if (pathname instanceof Array) {
+		pathname = pathname.join('/');
 	}
-	let urlname = pathname.map(encodeURIComponent).join('/');
+	let urlname = pathname.split('/').map(encodeURIComponent).join('/');
 
 	if (query) {
 		urlname += `?${querystring.stringify(query)}`;
