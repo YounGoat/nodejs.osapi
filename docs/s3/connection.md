@@ -61,3 +61,7 @@ let conn = new s3.Connection({
 ### -- basic --
 
 See [Interface Connection](../connection.md) for help info about basic methods.
+
+[- toc -][^toc]
+
+[^toc]: #table-of-contents

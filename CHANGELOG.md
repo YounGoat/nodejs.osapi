@@ -2,6 +2,11 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[1.1.0] - Jun 30th, 2020
+
+*	`(new Connection).updateObjectUserMeta()` added.
+*	Fixed bug in `s3.Connection` that signature wrong if user meta value containing WHITESPACE or NEWLINE character(s).
+
 ##	[1.0.1] - Jan 6th, 2020
 
 *	Remove debugging sentences.

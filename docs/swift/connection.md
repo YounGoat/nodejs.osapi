@@ -141,3 +141,7 @@ Once resolved:
 
 *	__result__ *string*  
 	A temporary URL.
+
+[- toc -][^toc]
+
+[^toc]: #table-of-contents

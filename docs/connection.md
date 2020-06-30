@@ -30,7 +30,7 @@ The returned `conn` is actually an instance of [__s3.Connection__](./s3/connecti
 	* [findBuckets()](#findbuckets)
 	* [-- Object --](#---object---)
 	* [createObject()](#createobject)
-	* [createObjectMeta()](#createobjectmeta)
+	* [updateObjectUserMeta()](#updateobjectusermeta)
 	* [copyObject()](#copyobject)
 	* [deleteObject()](#deleteobject)
 	* [readObject()](#readobject)
@@ -397,6 +397,24 @@ Once resolved:
 *	Promise | Connection __\<conn\>.readObjectMeta__( object *options* [, Function *callback* ] )
 
 See documentation about [readObject()](#readobject) for details.
+
+[- toc -][^toc]
+
+###	updateObjectUserMeta()
+
+*	Promise | Connection __\<conn\>.readObjectMeta__( string *name*, object *usermeta* [, Function *callback* ] )
+*	Promise | Connection __\<conn\>.readObjectMeta__( object *options*, object *usermeta* [, Function *callback* ] )
+
+So far, *options* accepts following properties:
+
+*	__options.bucket__ *string* OPTIONAL  
+	Bucket name.
+
+*	__options.name__ *string*  
+	Object name.
+
+*	__options.replace__ *boolean* OPTIONAL DEFAULT(`false`)  
+	Delete all the old user meta fields.
 
 [- toc -][^toc]
 

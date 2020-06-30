@@ -168,7 +168,7 @@ const Connection = function(options, settings) {
                 else if (typeof value != 'string') {
                     value += '';
                 }
-                value = value.replace(/[\s\n]+/g, '');
+                value = value.replace(/[\s\n]+/g, ' ');
                 return [ name.toLowerCase(), value ];
             });
 
@@ -208,6 +208,7 @@ const Connection = function(options, settings) {
 
     let beforeCallback = (err, response) => {
         if (err) throw err;
+        console.log(response.body);
         response.ossMeta = this._parseHeaders(response.headers);
         return response;
     };
@@ -324,7 +325,8 @@ Connection.prototype.createBucket = function(options, callback) {
  * @param  {Object}           options
  * @param  {string}           options               regard as the name(key) of object to be stored
  * @param  {string}           options.name          name(key) of object to be stored
- * @param  {object}           options.meta          meta info of the object
+ * @param  {object}          [options.meta]         meta info of the object
+ * @param  {string}          [options.metaFlag]     'w' | 'a'
  * @param  {string}          [options.contentType]  content type (MIME value)
  * @param  {string}          [options.acl]          [EXPERIMENTAL] acl of the object
  * @param  {string}          [options.bucket]       container/bucket to place the object, 
@@ -333,6 +335,12 @@ Connection.prototype.createBucket = function(options, callback) {
  * @param  {stream.Readable}  content               object content stream
  * @param  {Buffer}           content               object content buffer
  * @param  {Function}        [callback]             function(err, data)
+ * 
+ * This function maybe used to change existing object's meta info.
+ * In this case, no content will be put. 
+ * However, such ability is not public and only offered interiorly to
+ * Connection.prototype.updateObjectMeta(). So, to make things easy,
+ * argument `content` SHOULD be passed in explicitly with value `null`.
  */
 Connection.prototype.createObject = function(options, content, callback) {
     options = this._parseOptions(options);
@@ -341,18 +349,43 @@ Connection.prototype.createObject = function(options, content, callback) {
         options.contentType = mimeUtil.getType(options.name);
     }
 
-    return this._action(done => {
+    return this._action(async(done) => {
+		if (options.metaFlag == 'a') {
+            let meta = await this.readObjectMeta({
+				bucket : options.bucket, 
+				name   : options.name,
+            });
+            options.meta = Object.assign({}, meta.meta, options.meta);
+        }
+        
         let urlname = this._encodeUrl([options.bucket, options.name]);
         let headers = this._formatHeaders(options);
-        this.agent.put(urlname, headers, content, (err, response) => {
-            err = err || this._findError({
-                action : 'OBJECT_PUT',
-                expect : [ 200, 204 ],
-                options,
-                response,
-            });
-            done(err, response && response.ossMeta);
-        });
+        
+        // By default, use method PUT to create(upload) a new object.
+        let method = 'put';
+
+        if (options.metaFlag) {
+			/**
+			 * @see https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html
+			 * x-amz-metadata-directive
+			 * Valid Values: COPY | REPLACE
+			 */
+
+			// Destination is as same as original path.
+            headers['x-amz-copy-source'] = urlname;
+            headers['x-amz-metadata-directive'] = 'REPLACE';
+            content = '';
+        }
+            
+		this.agent[method](urlname, headers, content, (err, response) => {
+			err = err || this._findError({
+				action : `OBJECT_${method.toUpperCase()}`,
+				expect : [ 200, 204 ],
+				options,
+				response,
+			});
+			done(err, response && response.ossMeta);
+		});
     }, callback);
 };
 

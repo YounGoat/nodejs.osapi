@@ -56,7 +56,15 @@ Connection.prototype._action = function(action, callback) {
 			err ? reject && reject(err) : resolve && resolve(data);
 			callback && callback(err, data);
 		};
-		let run = () => action(done);
+
+		let run = () => {
+			// @update 2020-04-03
+			// Function action() is allowed to be an async one.
+			let p = action(done);
+			if (p && p.then && p.catch) {
+				p.then(() => done()).catch(done);
+			}
+		};
 
 		if (this.isConnected()) {
 			run();
@@ -161,7 +169,7 @@ Connection.prototype._formatHeaders = function(ossMeta) {
 			}
 
 			// Strictly, in Swift style,
-			// `x-object-meta-` and `x-container-meta-`  recommended.
+			// `x-object-meta-` and `x-container-meta-` recommended.
 			H[`x-amz-meta-${name}`] = value;
 		}
 	}
@@ -341,6 +349,29 @@ Connection.prototype._parseHeaders = function(headers) {
 };
 
 /**
+ * Update the meta data of an object.
+ * @param {Object}    options
+ * @param {string}    options           regarded as name of object
+ * @param {string}    options.name      name(key) of object to be stored
+ * @param {string}   [options.bucket]   container/bucket to place the object, 
+ *                                      by default current container of the connection will be used
+ * @param {boolean}  [options.replace]  DEFAULT false
+ * @param {Object}    meta              user-defined meta data
+ * @param {Function} [callback]
+ */
+Connection.prototype.updateObjectUserMeta = function(options, usermeta, callback) {
+	return this._action(async() => {
+		options = this._parseOptions(options);
+
+		options.meta = usermeta;
+		options.metaFlag = options.replace ? 'w' : 'a';
+		delete options.replace;
+		
+		return this.createObject(options, null, callback);
+	}, callback);	
+};
+
+/**
  * Delete a bucket.
  * @param  {Object}           options
  * @param  {string}           options              regard as options.name
@@ -348,20 +379,20 @@ Connection.prototype._parseHeaders = function(headers) {
  * @param  {Function}        [callback]
  */
 Connection.prototype.deleteBucket = function(options, callback) {
-    [ options, callback ] = this._parseArguments(arguments);
+	[ options, callback ] = this._parseArguments(arguments);
 	
 	return this._action(done => {
 		// The slash / at the end is necessary for aws S3 or aliyun OSS.
 		// In CPEH, it is not necessary.
-        let urlname = this._encodeUrl([options.name, '' /* to add ending slash */]);
-        
-        this.agent.delete(urlname, (err, response) => {
-            err = err || this._findError({
-                action : 'BUCKET_DELETE',
-                expect : [ 204 ],
+		let urlname = this._encodeUrl([options.name, '' /* to add ending slash */]);
+		
+		this.agent.delete(urlname, (err, response) => {
+			err = err || this._findError({
+				action : 'BUCKET_DELETE',
+				expect : [ 204 ],
 				options,
 				response,
-            });
+			});
 			done(err, response && response.ossMeta);
 		});
 	}, callback);
@@ -402,22 +433,22 @@ Connection.prototype.deleteObject = function(options, callback) {
  * @param  {Function}        [callback]
  */
 Connection.prototype.readBucket = function(options, callback) {
-    [ options, callback ] = this._parseArguments(arguments);
-    
-    return this._action(done => {
-        // The slash / at the end is necessary for aws S3 or aliyun OSS.
-        // In CPEH, it is not necessary.
-        let urlname = this._encodeUrl([options.name, '']);
+	[ options, callback ] = this._parseArguments(arguments);
+	
+	return this._action(done => {
+		// The slash / at the end is necessary for aws S3 or aliyun OSS.
+		// In CPEH, it is not necessary.
+		let urlname = this._encodeUrl([options.name, '']);
 
-        this.agent.head(urlname, (err, response) => {
-            err = err || this._findError({
-                action : 'BUCKET_HEAD',
+		this.agent.head(urlname, (err, response) => {
+			err = err || this._findError({
+				action : 'BUCKET_HEAD',
 				expect : [ 200, 204 ],
 				options,
-                response,
-            });
+				response,
+			});
 
-            if (OsapiError.isNotFound(err) && options.suppressNotFoundError) {
+			if (OsapiError.isNotFound(err) && options.suppressNotFoundError) {
 				done(null, null);
 			}
 			else if (err) {
@@ -427,8 +458,8 @@ Connection.prototype.readBucket = function(options, callback) {
 				let bucket = Object.assign(response.ossMeta, this._parseBucketHeaders(response.headers));
 				done(null, bucket);
 			}
-        });
-    }, callback);
+		});
+	}, callback);
 };
 
 /**
@@ -442,7 +473,7 @@ Connection.prototype.readBucket = function(options, callback) {
  */
 Connection.prototype.readObjectMeta = function(options, callback) {
 	[ options, callback ] = this._parseArguments(arguments);
-    options.onlyMeta = true;
+	options.onlyMeta = true;
 	return this.readObject(options, callback);
 };
 
