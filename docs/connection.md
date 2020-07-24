@@ -265,6 +265,9 @@ So far, *options* accepts following properties:
 *	__options.contentType__ *string* OPTIONAL  
 	MIME value.
 
+*       __options.contentLength__ *int* OPTIONAL
+        Object's size in bytes.
+
 *	__options.name__ *string*  
 	Object name.
 
