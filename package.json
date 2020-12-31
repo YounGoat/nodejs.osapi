@@ -1,6 +1,6 @@
 {
     "name": "osapi",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "description": "A common Object Storage API",
     "main": "index.js",
     "scripts": {},

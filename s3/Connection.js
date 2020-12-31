@@ -348,7 +348,7 @@ Connection.prototype.createObject = function(options, content, callback) {
         options.contentType = mimeUtil.getType(options.name);
     }
 
-    return this._action(async(done) => {
+    return this._action(async () => {
 		if (options.metaFlag == 'a') {
             let meta = await this.readObjectMeta({
 				bucket : options.bucket, 
@@ -376,15 +376,15 @@ Connection.prototype.createObject = function(options, content, callback) {
             content = '';
         }
             
-		this.agent[method](urlname, headers, content, (err, response) => {
-			err = err || this._findError({
-				action : `OBJECT_${method.toUpperCase()}`,
-				expect : [ 200, 204 ],
-				options,
-				response,
-			});
-			done(err, response && response.ossMeta);
-		});
+        let response = await this.agent[method](urlname, headers, content);
+        let err = this._findError({
+            action : `OBJECT_${method.toUpperCase()}`,
+            expect : [ 200, 204 ],
+            options,
+            response,
+        });
+        if (err) throw err;
+		return response.ossMeta;
     }, callback);
 };
 
