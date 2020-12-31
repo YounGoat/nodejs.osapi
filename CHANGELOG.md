@@ -2,7 +2,7 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
-##	[1.1.1] - Dec 18th, 2020
+##	[1.1.2] - Dec 31st, 2020
 
 *	Remove debug line `console.log()` in [s3/Connection.js].
 

@@ -27,7 +27,7 @@ function OsapiError(action, request, response) {
 	let message = [ 
 		'failed', 
 		action,
-		request.name,
+		request && request.name || '-',
 		response.statusCode,
 		response.statusMessage,
 	].join(' ');

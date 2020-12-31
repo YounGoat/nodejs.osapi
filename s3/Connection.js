@@ -208,7 +208,6 @@ const Connection = function(options, settings) {
 
     let beforeCallback = (err, response) => {
         if (err) throw err;
-        console.log(response.body);
         response.ossMeta = this._parseHeaders(response.headers);
         return response;
     };
