@@ -322,18 +322,19 @@ Connection.prototype.createBucket = function(options, callback) {
 /**
  * Put an object to remote storage.
  * @param  {Object}           options
- * @param  {string}           options               regard as the name(key) of object to be stored
- * @param  {string}           options.name          name(key) of object to be stored
- * @param  {object}          [options.meta]         meta info of the object
- * @param  {string}          [options.metaFlag]     'w' | 'a'
- * @param  {string}          [options.contentType]  content type (MIME value)
- * @param  {string}          [options.acl]          [EXPERIMENTAL] acl of the object
- * @param  {string}          [options.bucket]       container/bucket to place the object, 
- *                                                  by default current container of the connection will be used
- * @param  {string}           content               object content text
- * @param  {stream.Readable}  content               object content stream
- * @param  {Buffer}           content               object content buffer
- * @param  {Function}        [callback]             function(err, data)
+ * @param  {string}           options                 regard as the name(key) of object to be stored
+ * @param  {string}           options.name            name(key) of object to be stored
+ * @param  {object}          [options.meta]           meta info of the object
+ * @param  {string}          [options.metaFlag]       'w' | 'a'
+ * @param  {string}          [options.contentType]    content type (MIME value)
+ * @param  {int}             [options.contentLength]  content length in bytes
+ * @param  {string}          [options.acl]            [EXPERIMENTAL] acl of the object
+ * @param  {string}          [options.bucket]         container/bucket to place the object, 
+ *                                                    by default current container of the connection will be used
+ * @param  {string}           content                 object content text
+ * @param  {stream.Readable}  content                 object content stream
+ * @param  {Buffer}           content                 object content buffer
+ * @param  {Function}        [callback]               function(err, data)
  * 
  * This function maybe used to change existing object's meta info.
  * In this case, no content will be put. 
@@ -359,6 +360,9 @@ Connection.prototype.createObject = function(options, content, callback) {
         
         let urlname = this._encodeUrl([options.bucket, options.name]);
         let headers = this._formatHeaders(options);
+        if (options.contentLength) {
+            headers['content-length'] = options.contentLength;
+        }
         
         // By default, use method PUT to create(upload) a new object.
         let method = 'put';
