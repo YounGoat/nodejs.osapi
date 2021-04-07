@@ -160,6 +160,10 @@ So far, *options* accepts following properties:
 *	__options.suppressNotFoundError__ *boolean*  
 	Don't threw exception on `404 Not Found`.	
 
+*	__options.suppressBadRequestError__ *boolean*  
+	Don't threw exception on `400 Bad Request`.  
+	Generally, such exceptions are triggered when a wrong bucket/container name is passed through.
+
 Once resolved:
 *	__result.requestId__ *string*  
 	Request / transaction Id.
@@ -363,6 +367,10 @@ So far, *options* accepts following properties:
 
 *	__options.suppressNotFoundError__ *boolean* OPTIONAL DEFAULT(`false`)  
 	Don't threw exception on `404 Not Found`.
+
+*	__options.suppressBadRequestError__ *boolean* OPTIONAL DEFAULT(`false`)  
+	Don't threw exception on `400 Bad Request`.  
+	Generally, such exceptions are triggered when a wrong bucket/container name is passed through.
 
 Once resolved:
 

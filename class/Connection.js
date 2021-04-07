@@ -430,6 +430,7 @@ Connection.prototype.deleteObject = function(options, callback) {
  * @param  {string}           options              regard as options.name
  * @param  {string}          [options.name]        name(key) of object
  * @param  {boolean}         [options.suppressNotFoundError=false]
+ * @param  {boolean}         [options.suppressBadRequestError=false]
  * @param  {Function}        [callback]
  */
 Connection.prototype.readBucket = function(options, callback) {
@@ -448,7 +449,13 @@ Connection.prototype.readBucket = function(options, callback) {
 				response,
 			});
 
-			if (OsapiError.isNotFound(err) && options.suppressNotFoundError) {
+			if (0) {
+				// DO NOTHING.
+			}
+			else if (OsapiError.isNotFound(err) && options.suppressNotFoundError) {
+				done(null, null);
+			}
+			else if (OsapiError.isBadRequest(err) && options.suppressBadRequestError) {
 				done(null, null);
 			}
 			else if (err) {
@@ -469,6 +476,7 @@ Connection.prototype.readBucket = function(options, callback) {
  * @param  {string}          [options.bucket]         bucket name
  * @param  {string}          [options.name]           name(key) of object
  * @param  {boolean}         [options.suppressNotFoundError=false]
+ * @param  {boolean}         [options.suppressBadRequestError=false]
  * @param  {Function}        [callback]
  */
 Connection.prototype.readObjectMeta = function(options, callback) {

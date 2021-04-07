@@ -296,6 +296,7 @@ Connection.prototype.createBucket = function(options, callback) {
  * @param  {Object}          [options.meta]           meta data of object to be stored
  * @param  {string}          [options.metaFlag]       if set, only update meta data without replacing object content
  * @param  {boolean}         [options.suppressNotFoundError]
+ * @param  {boolean}         [options.suppressBadRequestError]
  * @param  {string}          [options.container]      container/bucket to place the object, 
  *                                                    by default current container of the connection will be used
  * @param  {string}          [content]                object content text
@@ -363,9 +364,16 @@ Connection.prototype.createObject = function(options, content, callback) {
 				options,
 				response,
 			});			
-			if (OsapiError.isNotFound(err) && options.suppressNotFoundError) {
+			
+			if (0) {
+				// DO NOTHING.
+			}
+			else if (OsapiError.isNotFound(err) && options.suppressNotFoundError) {
 				done(null, response.ossMeta);
 			}
+			else if (OsapiError.isBadRequest(err) && options.suppressBadRequestError) {
+				done(null, response.ossMeta);
+			}			
 			else {
 				done(err, response && response.ossMeta);
 			}
@@ -387,6 +395,7 @@ Connection.prototype.createObject = function(options, content, callback) {
  * @param {string}    options         regarded as name of object
  * @param {string}    options.name    name(key) of object to be stored
  * @param {boolean}  [options.suppressNotFoundError]
+ * @param {boolean}  [options.suppressBadRequestError]
  * @param {Object}   [meta]           meta data
  * @param {string}   [metaFlag='w']   'a' = append, 'w' = write
  * @param {Function} [callback]
@@ -635,6 +644,7 @@ Connection.prototype.isConnected = function() {
  * @param  {string}          [options.name]           name(key) of object
  * @param  {boolean}         [options.onlyMeta=false] 
  * @param  {boolean}         [options.suppressNotFoundError=false]
+ * @param  {boolean}         [options.suppressBadRequestError=false]
  * @param  {Function}        [callback]
  */
 Connection.prototype.readObject = function(options, callback) {
@@ -651,10 +661,17 @@ Connection.prototype.readObject = function(options, callback) {
                 response,
 			});
 
-			if (OsapiError.isNotFound(err) && options.suppressNotFoundError) {
+			if (0) {
+				// DO NOTHING.
+			}
+			else if (OsapiError.isNotFound(err) && options.suppressNotFoundError) {
 				done(null, null);
 			}
+			else if (OsapiError.isBadRequest(err) && options.suppressBadRequestError) {
+				done(null, null);
+			}			
 			else if (err) {
+				console.log(response);
 				done(err, response && response.ossMeta);
 			}
 			else {

@@ -375,7 +375,7 @@ Connection.prototype.createObject = function(options, content, callback) {
             headers['x-amz-metadata-directive'] = 'REPLACE';
             content = '';
         }
-            
+        
         let response = await this.agent[method](urlname, headers, content);
         let err = this._findError({
             action : `OBJECT_${method.toUpperCase()}`,
@@ -557,6 +557,7 @@ Connection.prototype.isConnected = function() {
  * @param  {string}          [options.name]        name(key) of object
  * @param  {boolean}         [config.onlyMeta=false] 
  * @param  {boolean}         [options.suppressNotFoundError=false]
+ * @param  {boolean}         [options.suppressBadRequestError=false]
  * @param  {Function}        [callback]
  */
 Connection.prototype.readObject = function(options, callback) {
@@ -573,10 +574,16 @@ Connection.prototype.readObject = function(options, callback) {
                 response,
             });
 
-            if (OsapiError.isNotFound(err) && options.suppressNotFoundError) {
+            if (0) {
+                // DO NOTHING.
+            }
+            else if (OsapiError.isNotFound(err) && options.suppressNotFoundError) {
                 done(null, null);
             }
-			else if (err) {
+			else if (OsapiError.isBadRequest(err) && options.suppressBadRequestError) {
+				done(null, null);
+			}			
+            else if (err) {
                 done(err, response && response.ossMeta);
             }
             else {

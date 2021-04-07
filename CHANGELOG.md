@@ -2,6 +2,10 @@
 
 Notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning 2.0.0](http://semver.org/).
 
+##	[1.2.0] - Apr 6th, 2021
+
+*	New options property `suppressBadRequestError` added.
+
 ##	[1.1.3] - Dec 31st, 2020
 
 *	Fixed bug in in [s3/Connection.js](s3/Connection.js), `async (done) => {}` is self-contradictory. 
