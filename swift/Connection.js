@@ -658,7 +658,7 @@ Connection.prototype.readObject = function(options, callback) {
 				action : 'OBJECT_' + method.toUpperCase(), 
 				expect : [ 200 ],
 				options,
-                response,
+				response,
 			});
 
 			if (0) {
@@ -671,7 +671,6 @@ Connection.prototype.readObject = function(options, callback) {
 				done(null, null);
 			}			
 			else if (err) {
-				console.log(response);
 				done(err, response && response.ossMeta);
 			}
 			else {
@@ -715,7 +714,7 @@ Connection.prototype.pullObject = function(options, callback) {
 					action : 'OBJECT_GET',
 					expect : [ 200 ],
 					options,
-                	response,
+					response,
 				});
 				if (err) {
 					done(err);

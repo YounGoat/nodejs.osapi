@@ -59,7 +59,7 @@ OsapiError.isNotFound = function(ex) {
 };
 
 OsapiError.isBadRequest = function(ex) {
-	return ex instanceof OsapiError && ex.request.statusCode == 400;	
+	return ex instanceof OsapiError && ex.response.statusCode == 400;	
 };
 
 module.exports = OsapiError;
